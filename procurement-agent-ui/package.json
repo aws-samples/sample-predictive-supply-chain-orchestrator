@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@types/leaflet": "1.9.21",
-    "amazon-cognito-identity-js": "6.3.16",
+    "amazon-cognito-identity-js": "6.3.17",
     "buffer": "6.0.3",
     "jspdf": "4.2.1",
     "jspdf-autotable": "5.0.7",
