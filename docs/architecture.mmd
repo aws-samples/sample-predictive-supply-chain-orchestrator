@@ -1,0 +1,79 @@
+graph TD
+    subgraph UPSTREAM["⚙️ UPSTREAM SYSTEMS"]
+        direction LR
+        NEPTDB["Neptune DB<br/>(Supplier Data)<br/>• Supplier Info<br/>• Contracts<br/>• Performance<br/>• Relationships"]
+        ERP_UP["ERP System<br/>(SAP/Oracle/Email)<br/>• Inventory<br/>• Production<br/>• Sales History<br/>• BOM"]
+        SAGE["SageMaker<br/>(ML Forecasting)<br/>• Amazon Chronos<br/>• Demand Forecast<br/>• Confidence Intervals"]
+    end
+
+    NEPTDB -->|Supplier Data| DL
+    ERP_UP -->|Inventory, Production, BOM| DL
+    SAGE -->|Demand Forecasts| DL
+
+    subgraph AGENT["⚡ PROCUREMENT OPTIMIZATION AGENT"]
+        subgraph DL["Data Layer"]
+            direction LR
+            CSV["CSV Data Reader<br/>• Suppliers<br/>• Materials<br/>• Contracts<br/>• Performance"]
+            CACHE["In-Memory Cache<br/>• LRU Cache<br/>• Pydantic Models"]
+        end
+
+        subgraph FRONT["Frontend Layer"]
+            REACT["React UI<br/>• Dashboard<br/>• Chat Interface<br/>• Pareto Chart<br/>• Supplier Map<br/>• PR Preview"]
+        end
+
+        DL --> OPT
+
+        subgraph OPT["Optimization Engine"]
+            PARETO["Pareto Algorithm<br/>• Multi-objective<br/>• Cost minimize<br/>• Risk minimize<br/>• Quality maximize"]
+        end
+
+        OPT --> RISK & CONSTRAINT & VOLUME
+
+        RISK["Risk Scorer<br/>• Financial stability<br/>• Geopolitical risk<br/>• Dependency risk"]
+        CONSTRAINT["Constraint Validator<br/>• Max 40% concentration<br/>• Lead time limits<br/>• Budget bounds"]
+        VOLUME["Volume Discount<br/>Calculator<br/>• Tier pricing<br/>• Bulk discounts"]
+
+        FRONT -->|User Selects Solution| BACKEND
+
+        subgraph BACKEND["Backend Layer"]
+            FLASK["Flask API<br/>• /api/optimize<br/>• /api/purchase-requisitions<br/>• /api/suppliers<br/>• /api/materials<br/>• Swagger Docs"]
+        end
+    end
+
+    RISK --> BACKEND
+    CONSTRAINT --> BACKEND
+    VOLUME --> BACKEND
+
+    BACKEND -->|Budget Impact| FIN
+    BACKEND -->|Creates PRs| ERP_DOWN
+    BACKEND -->|Stock History| NEPTDB_DOWN
+    BACKEND -->|Log Output| AUDIT
+    BACKEND -->|Update Schedule| PROD
+
+    subgraph DOWNSTREAM["📦 DOWNSTREAM SYSTEMS"]
+        direction LR
+        FIN["Financial Forecasting<br/>• Budget Tracking<br/>• Cost Analysis<br/>• Spend Forecasts"]
+        ERP_DOWN["ERP System<br/>(SAP/Oracle/Email)<br/>• PR Approval<br/>• PO Creation<br/>• Supplier Orders"]
+        NEPTDB_DOWN["Neptune DB<br/>(Decision History)<br/>• Decision Logs<br/>• Performance Feedback<br/>• Graph Statistics"]
+        AUDIT["Audit Trail<br/>• Decision Logs<br/>• Compliance<br/>• Traceability"]
+        PROD["Production Planning<br/>• Schedule Updates<br/>• Material Availability<br/>• Capacity Planning"]
+    end
+
+    classDef upstream fill:#E8DAEF,stroke:#B39DDB,color:#1A1A2E
+    classDef downstream fill:#E8DAEF,stroke:#B39DDB,color:#1A1A2E
+    classDef datalayer fill:#FFFFFF,stroke:#90A4AE,color:#1A1A2E
+    classDef cache fill:#FFFFFF,stroke:#90A4AE,color:#1A1A2E
+    classDef frontend fill:#BBDEFB,stroke:#64B5F6,color:#1A1A2E
+    classDef optim fill:#C8E6C9,stroke:#66BB6A,color:#1A1A2E
+    classDef pareto fill:#FFF9C4,stroke:#FDD835,color:#1A1A2E
+    classDef scorer fill:#FFE0B2,stroke:#FFB74D,color:#1A1A2E
+    classDef backend fill:#E3F2FD,stroke:#64B5F6,color:#1A1A2E
+    classDef flask fill:#FFFFFF,stroke:#90A4AE,color:#1A1A2E
+
+    class NEPTDB,ERP_UP,SAGE upstream
+    class CSV,CACHE datalayer
+    class REACT frontend
+    class PARETO pareto
+    class RISK,CONSTRAINT,VOLUME scorer
+    class FLASK flask
+    class FIN,ERP_DOWN,NEPTDB_DOWN,AUDIT,PROD downstream

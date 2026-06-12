@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-bike Forecast Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .nav-links {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-link {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 0.9em;
+            transition: background 0.3s;
+        }
+
+        .nav-link:hover {
+            background: #5568d3;
+        }
+
+        .nav-link.active {
+            background: #764ba2;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 20px;
+        }
+
+        .input-panel, .results-panel {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            padding: 25px;
+        }
+
+        .panel-title {
+            font-size: 1.5em;
+            color: #667eea;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .calculate-btn {
+            width: 100%;
+            padding: 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .calculate-btn:hover {
+            background: #5568d3;
+        }
+
+        .calculate-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .results-section {
+            margin-bottom: 30px;
+        }
+
+        .results-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .summary-card .value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .summary-card .label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .parts-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .parts-table th,
+        .parts-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .parts-table th {
+            background: #f8f9fa;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .parts-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .parts-table .clickable {
+            cursor: pointer;
+            color: #667eea;
+            text-decoration: underline;
+        }
+
+        .parts-table .clickable:hover {
+            color: #5568d3;
+        }
+
+        .breakdown-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .breakdown-section h4 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .breakdown-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .breakdown-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .breakdown-card .title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .breakdown-card .value {
+            font-size: 1.5em;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .breakdown-card .range {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="nav-links">
+                <a href="/data/data_viewer.html" class="nav-link">📊 Data Viewer</a>
+                <a href="/frontend/demand-forecasting.html" class="nav-link">💬 Agent Chat</a>
+                <a href="/frontend/forecast-calculator-v2.html" class="nav-link active">🔮 Forecast Calculator</a>
+            </div>
+            <h1>🔮 E-bike Forecast Calculator</h1>
+            <p>Calculate material demand based on production forecasts</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Input Panel -->
+            <div class="input-panel">
+                <h2 class="panel-title">Forecast Parameters</h2>
+                
+                <div class="form-group">
+                    <label for="bikeType">Bike Type</label>
+                    <select id="bikeType">
+                        <option value="EBIKE-URBAN-2024">Urban E-Bike 2024</option>
+                        <option value="EBIKE-MOUNTAIN-2024">Mountain E-Bike 2024</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="forecastDays">Forecast Period (Days)</label>
+                    <input type="number" id="forecastDays" value="30" min="1" max="90">
+                    <small style="color: #666; font-size: 0.85em;">AI will predict bike sales for this period</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="seasonOverride">Season (Optional Override)</label>
+                    <select id="seasonOverride">
+                        <option value="auto">Auto-detect from current date</option>
+                        <option value="spring">Spring (Mar-May) - Moderate +20%</option>
+                        <option value="summer">Summer (Jun-Aug) - Peak +50%</option>
+                        <option value="fall">Fall (Sep-Nov) - Slight +10%</option>
+                        <option value="winter">Winter (Dec-Feb) - Low -30%</option>
+                    </select>
+                    <small style="color: #666; font-size: 0.85em;">Override to simulate different seasons</small>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="includeMaintenanceCheckbox" checked>
+                        Include Maintenance Demand
+                    </label>
+                </div>
+
+                <button class="calculate-btn" id="calculateBtn" onclick="calculateForecast()">
+                    <span id="btnText">Generate Forecast</span>
+                    <span id="btnLoading" class="hidden">⏳ Forecasting...</span>
+                </button>
+                
+                <div id="forecastInfo" class="hidden" style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; font-size: 0.9em;">
+                    <strong>📊 Forecast Details:</strong>
+                    <div id="predictedSalesInfo" style="margin-top: 8px; color: #667eea; font-weight: bold;"></div>
+                    <div id="seasonalInfo" style="margin-top: 5px; color: #666; font-size: 0.9em;"></div>
+                </div>
+            </div>
+
+            <!-- Results Panel -->
+            <div class="results-panel">
+                <h2 class="panel-title">Forecast Results</h2>
+                
+                <div id="resultsContent" class="hidden">
+                    <!-- Summary Cards -->
+                    <div class="results-section">
+                        <h3>📊 Summary</h3>
+                        <div class="summary-cards">
+                            <div class="summary-card">
+                                <div class="value" id="totalParts">0</div>
+                                <div class="label">Total Parts Needed</div>
+                            </div>
+                            <div class="summary-card">
+                                <div class="value" id="uniqueParts">0</div>
+                                <div class="label">Unique Components</div>
+                            </div>
+                            <div class="summary-card">
+                                <div class="value" id="forecastPeriod">0</div>
+                                <div class="label">Days</div>
+                            </div>
+                            <div class="summary-card">
+                                <div class="value" id="bikeUnits">0</div>
+                                <div class="label">Bike Units</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Parts Breakdown Table -->
+                    <div class="results-section">
+                        <h3>🔧 Parts Breakdown</h3>
+                        <table class="parts-table" id="partsTable">
+                            <thead>
+                                <tr>
+                                    <th>Material ID</th>
+                                    <th>Component Name</th>
+                                    <th>Category</th>
+                                    <th>Qty per Bike</th>
+                                    <th>Total Needed</th>
+                                    <th>Lead Time</th>
+                                </tr>
+                            </thead>
+                            <tbody id="partsTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Detailed Breakdown (shown when part is clicked) -->
+                    <div id="detailedBreakdown" class="breakdown-section hidden">
+                        <h4>📋 Detailed Breakdown: <span id="selectedPartName"></span></h4>
+                        <div class="breakdown-grid">
+                            <div class="breakdown-card">
+                                <div class="title">New Production Orders</div>
+                                <div class="value" id="newOrdersValue">0</div>
+                                <div class="range">Range: <span id="newOrdersRange"></span></div>
+                            </div>
+                            <div class="breakdown-card">
+                                <div class="title">Maintenance Demand</div>
+                                <div class="value" id="maintenanceValue">0</div>
+                                <div class="range">Range: <span id="maintenanceRange"></span></div>
+                            </div>
+                            <div class="breakdown-card">
+                                <div class="title">Total Demand</div>
+                                <div class="value" id="totalDemandValue">0</div>
+                                <div class="range">Range: <span id="totalDemandRange"></span></div>
+                            </div>
+                            <div class="breakdown-card">
+                                <div class="title">Safety Stock (20%)</div>
+                                <div class="value" id="safetyStockValue">0</div>
+                                <div class="range">Recommended buffer</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="emptyState" style="text-align: center; padding: 60px 20px; color: #999;">
+                    <div style="font-size: 4em; margin-bottom: 20px;">📊</div>
+                    <h3 style="color: #666; margin-bottom: 10px;">No Forecast Yet</h3>
+                    <p>Enter your parameters and click "Calculate Forecast" to see results</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.3.3/dist/purify.min.js" integrity="sha384-pcBjnGbkyKeOXaoFkmJiuR9E08/6gkmus6/Strimnxtl3uk0Hx23v345pWyC/MMr" crossorigin="anonymous"></script>
+    <script>
+        const API_BASE_URL = 'http://localhost:8888';
+
+        // DOM builder helper — constructs elements without innerHTML (no XSS sink).
+        // Children that are strings/numbers become text nodes, so values are never parsed as HTML.
+        function makeEl(tag, props, ...children) {
+            const node = document.createElement(tag);
+            if (props) {
+                for (const [k, v] of Object.entries(props)) {
+                    if (v == null) continue;
+                    if (k === 'class') node.className = v;
+                    else if (k === 'style') node.style.cssText = v;
+                    else if (k.slice(0, 2) === 'on' && typeof v === 'function') node.addEventListener(k.slice(2), v);
+                    else node.setAttribute(k, v);
+                }
+            }
+            for (const c of children.flat()) {
+                if (c == null || c === false) continue;
+                node.appendChild(c instanceof Node ? c : document.createTextNode(String(c)));
+            }
+            return node;
+        }
+        
+        // Data storage
+        let bomData = [];
+        let materialsData = [];
+        let maintenanceData = [];
+
+        // Load data on page load
+        async function loadData() {
+            try {
+                const [bomResponse, materialsResponse, maintenanceResponse] = await Promise.all([
+                    fetch('/data/bom.csv'),
+                    fetch('/data/materials.csv'),
+                    fetch('/data/maintenance_demand_history.csv')
+                ]);
+
+                bomData = parseCSV(await bomResponse.text());
+                materialsData = parseCSV(await materialsResponse.text());
+                maintenanceData = parseCSV(await maintenanceResponse.text());
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
+        }
+
+        function parseCSV(text) {
+            const lines = text.trim().split('\n');
+            const headers = lines[0].split(',');
+            return lines.slice(1).map(line => {
+                const values = line.split(',');
+                const obj = {};
+                headers.forEach((header, i) => {
+                    obj[header] = values[i];
+                });
+                return obj;
+            });
+        }
+
+        function calculateForecast() {
+            const bikeType = document.getElementById('bikeType').value;
+            const forecastDays = parseInt(document.getElementById('forecastDays').value);
+            const seasonOverride = document.getElementById('seasonOverride').value;
+            const includeMaintenance = document.getElementById('includeMaintenanceCheckbox').checked;
+
+            // Show loading state
+            const btn = document.getElementById('calculateBtn');
+            const btnText = document.getElementById('btnText');
+            const btnLoading = document.getElementById('btnLoading');
+            btn.disabled = true;
+            btnText.classList.add('hidden');
+            btnLoading.classList.remove('hidden');
+
+            // Call the forecasting function with season override
+            predictBikeSales(bikeType, forecastDays, seasonOverride)
+                .then(result => {
+                    const { predictedSales, seasonInfo } = result;
+                    
+                    // Show predicted sales info
+                    document.getElementById('forecastInfo').classList.remove('hidden');
+                    document.getElementById('predictedSalesInfo').textContent = 
+                        `${predictedSales} units over ${forecastDays} days`;
+                    document.getElementById('seasonalInfo').textContent = seasonInfo;
+
+                    // Get BOM for selected bike type
+                    const bikeBOM = bomData.filter(item => item.product_id === bikeType);
+
+                    // Calculate parts needed
+                    const partsNeeded = bikeBOM.map(bomItem => {
+                        const material = materialsData.find(m => m.material_id === bomItem.material_id);
+                        const qtyPerBike = parseFloat(bomItem.quantity_required);
+                        const totalQty = predictedSales * qtyPerBike;
+
+                        // Calculate maintenance demand (estimate based on historical data)
+                        let maintenanceDemand = 0;
+                        if (includeMaintenance) {
+                            const historicalMaint = maintenanceData.filter(m => m.material_id === bomItem.material_id);
+                            if (historicalMaint.length > 0) {
+                                const avgDailyMaint = historicalMaint.reduce((sum, m) => sum + parseInt(m.quantity), 0) / 730; // 2 years
+                                maintenanceDemand = Math.round(avgDailyMaint * forecastDays);
+                            }
+                        }
+
+                        return {
+                            material_id: bomItem.material_id,
+                            name: material ? material.name : bomItem.material_id,
+                            category: material ? material.category : 'Unknown',
+                            qty_per_bike: qtyPerBike,
+                            new_orders: totalQty,
+                            maintenance: maintenanceDemand,
+                            total: totalQty + maintenanceDemand,
+                            lead_time: bomItem.lead_time_days
+                        };
+                    });
+
+                    displayResults(partsNeeded, forecastDays, predictedSales);
+                })
+                .catch(error => {
+                    console.error('Forecast error:', error);
+                    alert('Failed to generate forecast. Please try again.');
+                })
+                .finally(() => {
+                    // Reset button state
+                    btn.disabled = false;
+                    btnText.classList.remove('hidden');
+                    btnLoading.classList.add('hidden');
+                });
+        }
+
+        async function predictBikeSales(bikeType, forecastDays, seasonOverride = 'auto') {
+            try {
+                // Base historical average: 1.67 bikes/day per type
+                const avgDailySalesPerType = 1.67;
+                
+                // Determine season and multiplier
+                let currentMonth, seasonName, seasonalMultiplier;
+                
+                if (seasonOverride === 'auto') {
+                    currentMonth = new Date().getMonth() + 1; // 1-12
+                    
+                    if (currentMonth >= 3 && currentMonth <= 5) {
+                        seasonName = 'Spring';
+                        seasonalMultiplier = 1.2; // +20%
+                    } else if (currentMonth >= 6 && currentMonth <= 8) {
+                        seasonName = 'Summer';
+                        seasonalMultiplier = 1.5; // +50%
+                    } else if (currentMonth >= 9 && currentMonth <= 11) {
+                        seasonName = 'Fall';
+                        seasonalMultiplier = 1.1; // +10%
+                    } else {
+                        seasonName = 'Winter';
+                        seasonalMultiplier = 0.7; // -30%
+                    }
+                } else {
+                    // Use override
+                    switch(seasonOverride) {
+                        case 'spring':
+                            seasonName = 'Spring';
+                            seasonalMultiplier = 1.2;
+                            break;
+                        case 'summer':
+                            seasonName = 'Summer';
+                            seasonalMultiplier = 1.5;
+                            break;
+                        case 'fall':
+                            seasonName = 'Fall';
+                            seasonalMultiplier = 1.1;
+                            break;
+                        case 'winter':
+                            seasonName = 'Winter';
+                            seasonalMultiplier = 0.7;
+                            break;
+                    }
+                }
+
+                console.log(`Season: ${seasonName}, Multiplier: ${seasonalMultiplier}`);
+
+                // Calculate base prediction
+                const basePrediction = avgDailySalesPerType * forecastDays * seasonalMultiplier;
+                
+                // Add growth trend (5% annual growth)
+                const growthFactor = 1 + (0.05 * forecastDays / 365);
+                const trendAdjustedPrediction = basePrediction * growthFactor;
+                
+                // Add realistic variance (±10%)
+                const variance = trendAdjustedPrediction * 0.10;
+                const randomFactor = (Math.random() - 0.5) * 2; // -1 to +1
+                const finalPrediction = trendAdjustedPrediction + (randomFactor * variance);
+
+                const predictedSales = Math.max(Math.round(finalPrediction), Math.ceil(forecastDays * 0.5));
+                
+                // Calculate percentage change from baseline
+                const baselineSales = Math.round(avgDailySalesPerType * forecastDays);
+                const percentChange = Math.round(((predictedSales - baselineSales) / baselineSales) * 100);
+                const changeText = percentChange > 0 ? `+${percentChange}%` : `${percentChange}%`;
+                
+                const seasonInfo = `${seasonName} season: ${changeText} vs baseline (${baselineSales} units)`;
+                
+                console.log(`Predicted sales for ${bikeType} over ${forecastDays} days: ${predictedSales} units`);
+                
+                return {
+                    predictedSales,
+                    seasonInfo
+                };
+            } catch (error) {
+                console.error('Error predicting sales:', error);
+                // Fallback
+                const fallbackSales = Math.max(Math.round(forecastDays * 1.67), Math.ceil(forecastDays * 0.5));
+                return {
+                    predictedSales: fallbackSales,
+                    seasonInfo: 'Using baseline forecast'
+                };
+            }
+        }
+
+        function displayResults(partsNeeded, forecastDays, bikeUnits) {
+            // Show results, hide empty state
+            document.getElementById('resultsContent').classList.remove('hidden');
+            document.getElementById('emptyState').classList.add('hidden');
+
+            // Update summary cards
+            const totalParts = partsNeeded.reduce((sum, p) => sum + p.total, 0);
+            document.getElementById('totalParts').textContent = totalParts.toLocaleString();
+            document.getElementById('uniqueParts').textContent = partsNeeded.length;
+            document.getElementById('forecastPeriod').textContent = forecastDays;
+            document.getElementById('bikeUnits').textContent = bikeUnits;
+
+            // Populate parts table
+            const tbody = document.getElementById('partsTableBody');
+            tbody.textContent = '';
+            
+            partsNeeded.forEach(part => {
+                const row = makeEl('tr', null,
+                    makeEl('td', { class: 'clickable', onclick: () => showDetailedBreakdown(part.material_id) }, part.material_id),
+                    makeEl('td', null, part.name),
+                    makeEl('td', null, part.category),
+                    makeEl('td', null, part.qty_per_bike),
+                    makeEl('td', null, makeEl('strong', null, part.total.toLocaleString())),
+                    makeEl('td', null, `${part.lead_time} days`)
+                );
+                tbody.appendChild(row);
+            });
+
+            // Store for detailed breakdown
+            window.currentForecast = partsNeeded;
+        }
+
+        function showDetailedBreakdown(materialId) {
+            const part = window.currentForecast.find(p => p.material_id === materialId);
+            if (!part) return;
+
+            // Show breakdown section
+            document.getElementById('detailedBreakdown').classList.remove('hidden');
+            document.getElementById('selectedPartName').textContent = `${part.material_id} - ${part.name}`;
+
+            // Calculate ranges (±15% for uncertainty)
+            const newOrdersMin = Math.round(part.new_orders * 0.85);
+            const newOrdersMax = Math.round(part.new_orders * 1.15);
+            const maintMin = Math.round(part.maintenance * 0.85);
+            const maintMax = Math.round(part.maintenance * 1.15);
+            const totalMin = newOrdersMin + maintMin;
+            const totalMax = newOrdersMax + maintMax;
+            const safetyStock = Math.round(part.total * 0.2);
+
+            // Update values
+            document.getElementById('newOrdersValue').textContent = part.new_orders.toLocaleString();
+            document.getElementById('newOrdersRange').textContent = `${newOrdersMin.toLocaleString()} - ${newOrdersMax.toLocaleString()}`;
+            
+            document.getElementById('maintenanceValue').textContent = part.maintenance.toLocaleString();
+            document.getElementById('maintenanceRange').textContent = `${maintMin.toLocaleString()} - ${maintMax.toLocaleString()}`;
+            
+            document.getElementById('totalDemandValue').textContent = part.total.toLocaleString();
+            document.getElementById('totalDemandRange').textContent = `${totalMin.toLocaleString()} - ${totalMax.toLocaleString()}`;
+            
+            document.getElementById('safetyStockValue').textContent = safetyStock.toLocaleString();
+
+            // Scroll to breakdown
+            document.getElementById('detailedBreakdown').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // Initialize
+        loadData();
+    </script>
+</body>
+</html>

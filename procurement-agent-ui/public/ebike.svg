@@ -1,0 +1,60 @@
+<svg viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg">
+  <!-- Wheels -->
+  <circle cx="200" cy="450" r="50" stroke="#94a3b8" stroke-width="3" fill="none"/>
+  <circle cx="200" cy="450" r="45" stroke="#94a3b8" stroke-width="3" fill="none"/>
+  <circle cx="200" cy="450" r="5" fill="#000"/>
+  <circle cx="600" cy="450" r="50" stroke="#94a3b8" stroke-width="3" fill="none"/>
+  <circle cx="600" cy="450" r="45" stroke="#94a3b8" stroke-width="3" fill="none"/>
+  <circle cx="600" cy="450" r="5" fill="#000"/>
+  <line x1="200" y1="400" x2="200" y2="500" stroke="#94a3b8" stroke-width="3"/>
+  <line x1="200" y1="400" x2="250" y2="450" stroke="#94a3b8" stroke-width="3"/>
+  <line x1="200" y1="400" x2="150" y2="450" stroke="#94a3b8" stroke-width="3"/>
+  <line x1="200" y1="500" x2="250" y2="450" stroke="#94a3b8" stroke-width="3"/>
+  <line x1="200" y1="500" x2="150" y2="450" stroke="#94a3b8" stroke-width="3"/>
+  <line x1="600" y1="400" x2="600" y2="500" stroke="#94a3b8" stroke-width="3"/>
+  <line x1="600" y1="400" x2="650" y2="450" stroke="#94a3b8" stroke-width="3"/>
+  <line x1="600" y1="400" x2="550" y2="450" stroke="#94a3b8" stroke-width="3"/>
+  <line x1="600" y1="500" x2="650" y2="450" stroke="#94a3b8" stroke-width="3"/>
+  <line x1="600" y1="500" x2="550" y2="450" stroke="#94a3b8" stroke-width="3"/>
+
+  <!-- Frame -->
+  <line x1="200" y1="450" x2="400" y2="350" stroke="#475569" stroke-width="5"/>
+  <line x1="400" y1="350" x2="400" y2="250" stroke="#475569" stroke-width="5"/>
+  <line x1="400" y1="250" x2="600" y2="250" stroke="#475569" stroke-width="5"/>
+  <line x1="600" y1="250" x2="600" y2="450" stroke="#475569" stroke-width="5"/>
+  <line x1="400" y1="250" x2="300" y2="150" stroke="#475569" stroke-width="5"/>
+  <line x1="300" y1="150" x2="200" y2="450" stroke="#475569" stroke-width="5"/>
+  <line x1="300" y1="150" x2="300" y2="50" stroke="#475569" stroke-width="5"/>
+  <line x1="300" y1="50" x2="200" y2="450" stroke="#475569" stroke-width="5"/>
+
+  <!-- Battery -->
+  <rect x="250" y="280" width="80" height="40" rx="10" fill="#3b82f6" stroke="#475569" stroke-width="5"/>
+  <text x="270" y="305" font-family="Arial" font-size="20" fill="white">BATTERY</text>
+
+  <!-- Motor -->
+  <circle cx="400" cy="350" r="15" fill="#8b5cf6"/>
+  <text x="385" y="355" font-family="Arial" font-size="15" fill="white">MOTOR</text>
+
+  <!-- Display -->
+  <rect x="300" y="100" width="40" height="20" rx="5" fill="#22c55e"/>
+
+  <!-- Seat -->
+  <ellipse cx="600" cy="250" rx="20" ry="10" fill="#000"/>
+
+  <!-- Handlebars -->
+  <path d="M300,50 Q350,20 400,50" stroke="#475569" stroke-width="5"/>
+  <rect x="290" y="40" width="20" height="20" fill="#000"/>
+  <rect x="390" y="40" width="20" height="20" fill="#000"/>
+
+  <!-- Pedals -->
+  <line x1="400" y1="350" x2="420" y2="350" stroke="#000" stroke-width="5"/>
+  <rect x="415" y="340" width="10" height="20" fill="#000"/>
+  <line x1="400" y1="350" x2="380" y2="350" stroke="#000" stroke-width="5"/>
+  <rect x="365" y="340" width="10" height="20" fill="#000"/>
+
+  <!-- Chain -->
+  <line x1="400" y1="350" x2="600" y2="450" stroke="#000" stroke-width="3" stroke-dasharray="5,5"/>
+
+  <!-- Text -->
+  <text x="400" y="260" font-family="Arial" font-size="20" fill="gray" font-style="italic" text-anchor="middle">VOLTCYCLE</text>
+</svg>

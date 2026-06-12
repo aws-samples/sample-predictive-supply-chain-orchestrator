@@ -1,0 +1,196 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36" version="29.6.1">
+  <diagram id="arch" name="Architecture">
+    <mxGraphModel dx="2758" dy="635" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="1600" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="up_bg" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8DAEF;strokeColor=#B39DDB;strokeWidth=2;arcSize=8;" value="" vertex="1">
+          <mxGeometry height="170" width="1300" x="50" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="up_label" parent="1" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontStyle=1;fontSize=14;" value="UPSTREAM SYSTEMS" vertex="1">
+          <mxGeometry height="30" width="220" x="570" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="nept_up" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#9E9E9E;strokeWidth=1.5;fontSize=10;verticalAlign=middle;align=center;" value="&lt;b&gt;Neptune DB&lt;/b&gt;&lt;br/&gt;(Supplier Data)&lt;br/&gt;Supplier Info&lt;br/&gt;Contracts&lt;br/&gt;Performance&lt;br/&gt;Relationships" vertex="1">
+          <mxGeometry height="110" width="160" x="100" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="erp_up" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#9E9E9E;strokeWidth=1.5;fontSize=10;verticalAlign=middle;align=center;" value="&lt;b&gt;ERP System&lt;/b&gt;&lt;br/&gt;(SAP/Oracle/Email)&lt;br/&gt;Inventory&lt;br/&gt;Production&lt;br/&gt;Sales History&lt;br/&gt;BOM" vertex="1">
+          <mxGeometry height="110" width="160" x="370" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="sage" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#9E9E9E;strokeWidth=1.5;fontSize=10;verticalAlign=middle;align=center;" value="&lt;b&gt;SageMaker&lt;/b&gt;&lt;br/&gt;(ML Forecasting)&lt;br/&gt;Amazon Chronos&lt;br/&gt;Demand Forecast&lt;br/&gt;Confidence Intervals" vertex="1">
+          <mxGeometry height="110" width="160" x="870" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="bedrock" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#9E9E9E;strokeWidth=1.5;fontSize=10;verticalAlign=middle;align=center;" value="&lt;b&gt;Amazon Bedrock&lt;/b&gt;&lt;br/&gt;(Claude Sonnet 4)&lt;br/&gt;Strands Agent SDK&lt;br/&gt;ConverseStream&lt;br/&gt;AgentCore Runtime" vertex="1">
+          <mxGeometry height="110" width="160" x="-150" y="295" as="geometry" />
+        </mxCell>
+        <mxCell id="cognito" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#9E9E9E;strokeWidth=1.5;fontSize=10;verticalAlign=middle;align=center;" value="&lt;b&gt;Amazon Cognito&lt;/b&gt;&lt;br/&gt;User Pool&lt;br/&gt;RBAC Groups&lt;br/&gt;Auth Tokens" vertex="1">
+          <mxGeometry height="110" width="140" x="1200" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="a_nept_dl" edge="1" parent="1" source="nept_up" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#666666;fontSize=9;fontStyle=2;" target="dl_bg" value="Supplier Data">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a_erp_dl" edge="1" parent="1" source="erp_up" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#666666;fontSize=9;fontStyle=2;" target="dl_bg" value="Inventory, Production, BOM">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a_sage_dl" edge="1" parent="1" source="sage" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#666666;fontSize=9;fontStyle=2;" target="dl_bg" value="Demand Forecasts">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="940" y="220" />
+              <mxPoint x="450" y="220" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="agent_bg" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#90A4AE;strokeWidth=2;arcSize=5;dashed=1;" value="" vertex="1">
+          <mxGeometry height="680" width="1300" x="50" y="240" as="geometry" />
+        </mxCell>
+        <mxCell id="agent_label" parent="1" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontStyle=1;fontSize=14;" value="PROCUREMENT OPTIMIZATION AGENT" vertex="1">
+          <mxGeometry height="30" width="380" x="480" y="245" as="geometry" />
+        </mxCell>
+        <mxCell id="dl_bg" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#BDBDBD;strokeWidth=1.5;arcSize=8;" value="" vertex="1">
+          <mxGeometry height="130" width="500" x="200" y="285" as="geometry" />
+        </mxCell>
+        <mxCell id="dl_label" parent="1" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontStyle=1;fontSize=12;" value="Data Layer" vertex="1">
+          <mxGeometry height="25" width="90" x="400" y="288" as="geometry" />
+        </mxCell>
+        <mxCell id="csv" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9C4;strokeColor=#FDD835;strokeWidth=1.5;fontSize=10;verticalAlign=middle;align=center;" value="&lt;b&gt;CSV Data Reader&lt;/b&gt;&lt;br/&gt;Suppliers&lt;br/&gt;Materials&lt;br/&gt;Contracts&lt;br/&gt;Performance" vertex="1">
+          <mxGeometry height="85" width="160" x="230" y="315" as="geometry" />
+        </mxCell>
+        <mxCell id="cache" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9C4;strokeColor=#FDD835;strokeWidth=1.5;fontSize=10;verticalAlign=middle;align=center;" value="&lt;b&gt;In-Memory Cache&lt;/b&gt;&lt;br/&gt;LRU Cache&lt;br/&gt;Pydantic Models" vertex="1">
+          <mxGeometry height="85" width="160" x="500" y="315" as="geometry" />
+        </mxCell>
+        <mxCell id="opt_bg" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#66BB6A;strokeWidth=2;arcSize=8;" value="" vertex="1">
+          <mxGeometry height="110" width="500" x="200" y="445" as="geometry" />
+        </mxCell>
+        <mxCell id="opt_label" parent="1" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontStyle=1;fontSize=12;" value="Optimization Engine" vertex="1">
+          <mxGeometry height="25" width="150" x="370" y="448" as="geometry" />
+        </mxCell>
+        <mxCell id="pareto" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#66BB6A;strokeWidth=1.5;fontSize=10;verticalAlign=middle;align=center;" value="&lt;b&gt;Pareto Algorithm&lt;/b&gt;&lt;br/&gt;Multi-objective&lt;br/&gt;Cost minimize&lt;br/&gt;Risk minimize&lt;br/&gt;Quality maximize" vertex="1">
+          <mxGeometry height="70" width="160" x="340" y="475" as="geometry" />
+        </mxCell>
+        <mxCell id="a_dl_opt" edge="1" parent="1" source="dl_bg" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#666666;" target="opt_bg" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="risk" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#FFB74D;strokeWidth=1.5;fontSize=10;verticalAlign=middle;align=center;" value="&lt;b&gt;Risk Scorer&lt;/b&gt;&lt;br/&gt;Financial stability&lt;br/&gt;Geopolitical risk&lt;br/&gt;Dependency risk" vertex="1">
+          <mxGeometry height="80" width="170" x="100" y="590" as="geometry" />
+        </mxCell>
+        <mxCell id="constraint" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#FFB74D;strokeWidth=1.5;fontSize=10;verticalAlign=middle;align=center;" value="&lt;b&gt;Constraint Validator&lt;/b&gt;&lt;br/&gt;Max 40% concentration&lt;br/&gt;Lead time limits&lt;br/&gt;Budget bounds" vertex="1">
+          <mxGeometry height="80" width="180" x="360" y="590" as="geometry" />
+        </mxCell>
+        <mxCell id="volume" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#FFB74D;strokeWidth=1.5;fontSize=10;verticalAlign=middle;align=center;" value="&lt;b&gt;Volume Discount Calculator&lt;/b&gt;&lt;br/&gt;Tier pricing&lt;br/&gt;Bulk discounts" vertex="1">
+          <mxGeometry height="80" width="170" x="615" y="590" as="geometry" />
+        </mxCell>
+        <mxCell id="a_opt_risk" edge="1" parent="1" source="opt_bg" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#666666;" target="risk" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a_opt_const" edge="1" parent="1" source="opt_bg" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#666666;" target="constraint" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a_opt_vol" edge="1" parent="1" source="opt_bg" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#666666;" target="volume" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="front_bg" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#64B5F6;strokeWidth=2;arcSize=8;" value="" vertex="1">
+          <mxGeometry height="270" width="420" x="880" y="285" as="geometry" />
+        </mxCell>
+        <mxCell id="front_label" parent="1" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontStyle=1;fontSize=12;" value="Frontend Layer" vertex="1">
+          <mxGeometry height="25" width="110" x="1030" y="288" as="geometry" />
+        </mxCell>
+        <mxCell id="react" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#64B5F6;strokeWidth=1.5;fontSize=10;verticalAlign=middle;align=center;" value="&lt;b&gt;React 19 UI&lt;/b&gt;&lt;br/&gt;Dashboard&lt;br/&gt;Chat Interface&lt;br/&gt;Pareto Chart&lt;br/&gt;Supplier Map&lt;br/&gt;PR Preview" vertex="1">
+          <mxGeometry height="100" width="150" x="920" y="318" as="geometry" />
+        </mxCell>
+        <mxCell id="hosting" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#64B5F6;strokeWidth=1.5;fontSize=10;verticalAlign=middle;align=center;" value="&lt;b&gt;Hosting&lt;/b&gt;&lt;br/&gt;CloudFront CDN&lt;br/&gt;S3 Static Assets&lt;br/&gt;HTTPS / OAI" vertex="1">
+          <mxGeometry height="100" width="150" x="1110" y="318" as="geometry" />
+        </mxCell>
+        <mxCell id="charts" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#64B5F6;strokeWidth=1.5;fontSize=10;verticalAlign=middle;align=center;" value="&lt;b&gt;Visualizations&lt;/b&gt;&lt;br/&gt;Recharts&lt;br/&gt;Leaflet Maps&lt;br/&gt;Network Graph" vertex="1">
+          <mxGeometry height="80" width="150" x="920" y="435" as="geometry" />
+        </mxCell>
+        <mxCell id="auth_ui" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#64B5F6;strokeWidth=1.5;fontSize=10;verticalAlign=middle;align=center;" value="&lt;b&gt;Auth and RBAC&lt;/b&gt;&lt;br/&gt;Cognito Integration&lt;br/&gt;Role-based views&lt;br/&gt;4 User Personas" vertex="1">
+          <mxGeometry height="80" width="150" x="1110" y="435" as="geometry" />
+        </mxCell>
+        <mxCell id="a_cog_auth" edge="1" parent="1" source="cognito" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#DD344C;fontSize=9;fontStyle=2;dashed=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="auth_ui" value="Auth">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a_bed_agent" edge="1" parent="1" source="bedrock" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#7B61FF;fontSize=9;fontStyle=2;dashed=1;" target="dl_bg" value="LLM / Agent">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="back_bg" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#64B5F6;strokeWidth=2;arcSize=8;" value="" vertex="1">
+          <mxGeometry height="170" width="800" x="300" y="710" as="geometry" />
+        </mxCell>
+        <mxCell id="back_label" parent="1" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontStyle=1;fontSize=12;" value="Backend Layer" vertex="1">
+          <mxGeometry height="25" width="110" x="640" y="713" as="geometry" />
+        </mxCell>
+        <mxCell id="flask" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#90A4AE;strokeWidth=1.5;fontSize=10;verticalAlign=middle;align=center;" value="&lt;b&gt;Flask API&lt;/b&gt;&lt;br/&gt;/api/optimize&lt;br/&gt;/api/purchase-requisitions&lt;br/&gt;/api/suppliers&lt;br/&gt;/api/materials&lt;br/&gt;Swagger Docs" vertex="1">
+          <mxGeometry height="110" width="200" x="380" y="740" as="geometry" />
+        </mxCell>
+        <mxCell id="apigw" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#90A4AE;strokeWidth=1.5;fontSize=10;verticalAlign=middle;align=center;" value="&lt;b&gt;API Gateway (REST)&lt;/b&gt;&lt;br/&gt;/api/* proxy&lt;br/&gt;CORS&lt;br/&gt;Cognito Authorizer" vertex="1">
+          <mxGeometry height="110" width="180" x="630" y="740" as="geometry" />
+        </mxCell>
+        <mxCell id="lambda" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#90A4AE;strokeWidth=1.5;fontSize=10;verticalAlign=middle;align=center;" value="&lt;b&gt;AWS Lambda (VPC)&lt;/b&gt;&lt;br/&gt;Python 3.12&lt;br/&gt;scipy + numpy layer&lt;br/&gt;Neptune SG access" vertex="1">
+          <mxGeometry height="110" width="180" x="860" y="740" as="geometry" />
+        </mxCell>
+        <mxCell id="a_risk_back" edge="1" parent="1" source="risk" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#666666;" target="back_bg" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="185" y="690" />
+              <mxPoint x="700" y="690" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="a_const_back" edge="1" parent="1" source="constraint" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#666666;" target="back_bg" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a_vol_back" edge="1" parent="1" source="volume" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#666666;" target="back_bg" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a_front_back" edge="1" parent="1" source="front_bg" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#1976D2;fontSize=9;fontStyle=2;strokeWidth=2;" target="back_bg" value="User Selects Solution">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1090" y="690" />
+              <mxPoint x="700" y="690" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="down_bg" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8DAEF;strokeColor=#B39DDB;strokeWidth=2;arcSize=8;" value="" vertex="1">
+          <mxGeometry height="170" width="1300" x="50" y="960" as="geometry" />
+        </mxCell>
+        <mxCell id="down_label" parent="1" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontStyle=1;fontSize=14;" value="DOWNSTREAM SYSTEMS" vertex="1">
+          <mxGeometry height="30" width="240" x="540" y="965" as="geometry" />
+        </mxCell>
+        <mxCell id="fin" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#9E9E9E;strokeWidth=1.5;fontSize=10;verticalAlign=middle;align=center;" value="&lt;b&gt;Financial Forecasting&lt;/b&gt;&lt;br/&gt;Budget Tracking&lt;br/&gt;Cost Analysis&lt;br/&gt;Spend Forecasts" vertex="1">
+          <mxGeometry height="100" width="170" x="70" y="1000" as="geometry" />
+        </mxCell>
+        <mxCell id="erp_down" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#9E9E9E;strokeWidth=1.5;fontSize=10;verticalAlign=middle;align=center;" value="&lt;b&gt;ERP System&lt;/b&gt;&lt;br/&gt;(SAP/Oracle/Email)&lt;br/&gt;PR Approval&lt;br/&gt;PO Creation&lt;br/&gt;Supplier Orders" vertex="1">
+          <mxGeometry height="100" width="170" x="310" y="1000" as="geometry" />
+        </mxCell>
+        <mxCell id="nept_down" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#9E9E9E;strokeWidth=1.5;fontSize=10;verticalAlign=middle;align=center;" value="&lt;b&gt;Neptune DB&lt;/b&gt;&lt;br/&gt;(Decision History)&lt;br/&gt;Decision Logs&lt;br/&gt;Performance Feedback&lt;br/&gt;Graph Statistics" vertex="1">
+          <mxGeometry height="100" width="170" x="615" y="1010" as="geometry" />
+        </mxCell>
+        <mxCell id="audit" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#9E9E9E;strokeWidth=1.5;fontSize=10;verticalAlign=middle;align=center;" value="&lt;b&gt;Audit Trail&lt;/b&gt;&lt;br/&gt;Decision Logs&lt;br/&gt;Compliance&lt;br/&gt;Traceability" vertex="1">
+          <mxGeometry height="100" width="170" x="950" y="1000" as="geometry" />
+        </mxCell>
+        <mxCell id="prod" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#9E9E9E;strokeWidth=1.5;fontSize=10;verticalAlign=middle;align=center;" value="&lt;b&gt;Production Planning&lt;/b&gt;&lt;br/&gt;Schedule Updates&lt;br/&gt;Material Availability&lt;br/&gt;Capacity Planning" vertex="1">
+          <mxGeometry height="100" width="170" x="1150" y="1010" as="geometry" />
+        </mxCell>
+        <mxCell id="a_back_fin" edge="1" parent="1" source="back_bg" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#666666;fontSize=9;fontStyle=2;" target="fin" value="Budget Impact">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a_back_erp" edge="1" parent="1" source="back_bg" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#666666;fontSize=9;fontStyle=2;" target="erp_down" value="Creates PRs">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a_back_nept" edge="1" parent="1" source="back_bg" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#666666;fontSize=9;fontStyle=2;" target="nept_down" value="Stock History">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a_back_audit" edge="1" parent="1" source="back_bg" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#666666;fontSize=9;fontStyle=2;" target="audit" value="Log Output">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a_back_prod" edge="1" parent="1" source="back_bg" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#666666;fontSize=9;fontStyle=2;" target="prod" value="Update Schedule">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="cdk_bg" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9C4;strokeColor=#FDD835;strokeWidth=2;arcSize=8;" value="" vertex="1">
+          <mxGeometry height="80" width="1300" x="50" y="1170" as="geometry" />
+        </mxCell>
+        <mxCell id="cdk_label" parent="1" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];strokeColor=none;fillColor=none;fontSize=11;" value="&lt;b&gt;AWS CDK (Python)&lt;/b&gt; — 8 Stacks: Identity | Lambda Layer | Data | Lambda Tools | Neptune Loader | Agent | API | Frontend" vertex="1">
+          <mxGeometry height="40" width="1100" x="150" y="1190" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

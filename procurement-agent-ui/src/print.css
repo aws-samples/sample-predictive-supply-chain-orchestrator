@@ -1,0 +1,18 @@
+@media print {
+  /* Hide non-essential UI elements when printing */
+  nav, button, .no-print, [style*="cursor: pointer"] {
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
+  }
+  /* Ensure charts render properly */
+  .recharts-responsive-container {
+    page-break-inside: avoid;
+  }
+  /* Clean background for print */
+  body {
+    background: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

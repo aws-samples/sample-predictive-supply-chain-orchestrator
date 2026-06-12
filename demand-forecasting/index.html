@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-bike Demand Forecasting</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            color: #e2e8f0;
+        }
+        .container { max-width: 720px; width: 100%; padding: 20px; }
+        h1 { font-size: 28px; font-weight: 700; margin-bottom: 6px; }
+        .subtitle { color: #94a3b8; font-size: 14px; margin-bottom: 32px; }
+        .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .card {
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px; padding: 24px; text-decoration: none; color: #e2e8f0;
+            transition: all 0.2s;
+        }
+        .card:hover { background: rgba(255,255,255,0.12); border-color: rgba(99,102,241,0.5); transform: translateY(-2px); }
+        .icon { font-size: 32px; margin-bottom: 12px; }
+        .card h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+        .card p { font-size: 12px; color: #94a3b8; line-height: 1.5; }
+        .status { margin-top: 24px; text-align: center; font-size: 12px; color: #64748b; }
+        .status a { color: #818cf8; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚲 E-bike Demand Forecasting</h1>
+        <p class="subtitle">ML-powered demand prediction for supply chain planning</p>
+        <div class="cards">
+            <a class="card" href="/data/data_viewer.html">
+                <div class="icon">📊</div>
+                <h3>Data Viewer</h3>
+                <p>Explore historical sales, maintenance, weather, and holiday data</p>
+            </a>
+            <a class="card" href="/frontend/forecast-calculator-v2.html">
+                <div class="icon">🔮</div>
+                <h3>Forecast Calculator</h3>
+                <p>Generate material demand forecasts with Chronos-2 confidence intervals</p>
+            </a>
+            <a class="card" href="/frontend/demand-forecasting.html">
+                <div class="icon">💬</div>
+                <h3>Agent Chat</h3>
+                <p>Ask questions about demand patterns using the AI agent</p>
+            </a>
+            <a class="card" href="/api/health">
+                <div class="icon">🔌</div>
+                <h3>API Health</h3>
+                <p>Check server status and available endpoints</p>
+            </a>
+        </div>
+        <div class="status">
+            Server running on port 8888 &middot;
+            <!-- nosemgrep: plaintext-http-link -- localhost dev server link, not served over TLS -->
+            <a href="http://localhost:5174">Procurement UI →</a>
+        </div>
+    </div>
+</body>
+</html>

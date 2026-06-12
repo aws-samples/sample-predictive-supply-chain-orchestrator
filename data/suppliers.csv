@@ -1,0 +1,16 @@
+supplier_id,name,location,rating,lead_time_days,payment_terms,financial_stability_score,geopolitical_risk_score,active_status,contact_email,contact_phone
+SUP-001,Shenzhen LiPower Energy Co.,Shenzhen China,3.2,30,NET 60,5.5,6.5,TRUE,contact@batterytech.com,+86-755-1234567
+SUP-002,Samsung SDI (Korea),Seoul South Korea,4.8,35,NET 45,9.0,2.0,TRUE,sales@powercell.kr,+82-2-9876543
+SUP-003,Panasonic Energy (San Jose),San Jose USA,4.5,45,NET 30,8.5,1.2,TRUE,info@ecoenergy.com,+1-408-555-0123
+SUP-004,Bafang Electric (Suzhou),Munich Germany,4.9,40,NET 90,9.2,1.5,TRUE,orders@drivemotor.de,+49-89-123456
+SUP-005,Shimano Components (Taipei),Taipei Taiwan,4.0,28,NET 60,7.0,3.5,TRUE,contact@torquetech.tw,+886-2-87654321
+SUP-006,Bosch eBike Systems,Detroit USA,4.2,50,NET 30,8.0,1.0,TRUE,sales@motiondrive.com,+1-313-555-0199
+SUP-007,Giant Manufacturing Co.,Portland USA,4.6,25,NET 45,8.8,2.2,TRUE,info@alumatech.com,+1-503-555-0145
+SUP-008,Merida Industry Co.,Nagoya Japan,4.8,38,NET 60,9.5,1.8,TRUE,sales@carbonpro.jp,+81-52-1234567
+SUP-009,Reynolds Technology (UK),Manchester UK,3.8,42,NET 90,6.5,3.0,TRUE,orders@frameworks.co.uk,+44-161-555-0178
+SUP-010,Garmin Display Systems,Bangalore India,3.5,32,NET 45,5.0,5.0,TRUE,contact@smartdisplay.in,+91-80-12345678
+SUP-011,Continental Electronics,Austin USA,4.3,28,NET 30,8.2,1.5,TRUE,sales@electrovision.com,+1-512-555-0167
+SUP-012,Sigma Sport (Germany),Guangzhou China,3.4,35,NET 60,5.8,5.5,TRUE,info@displaymaster.cn,+86-20-87654321
+SUP-013,DT Swiss AG,Amsterdam Netherlands,4.4,30,NET 45,8.5,2.5,TRUE,orders@wheelcraft.nl,+31-20-1234567
+SUP-014,Mavic SAS (France),Chicago USA,4.1,40,NET 30,7.8,1.3,TRUE,sales@rollertech.com,+1-312-555-0189
+SUP-015,SRAM Corporation,Stuttgart Germany,4.7,35,NET 90,9.0,2.0,TRUE,contact@brakesafe.de,+49-711-123456

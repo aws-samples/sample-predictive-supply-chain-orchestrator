@@ -1,0 +1,97 @@
+# AWS Credentials - NEVER COMMIT THESE
+.aws/
+*.pem
+*.key
+credentials
+# Ignore AWS config file but not backend/config/ directory
+/config
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
+*.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+
+# AWS
+.aws-sam/
+cdk.out/
+.cdk.staging/
+
+# Node modules (for frontend)
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# AgentCore build artifacts
+backend/deployment_package/
+backend/deployment_package.zip
+backend/agent-bundle/
+
+# AgentCore deploy directories — generated files are not tracked
+backend/agentcore-deploy/
+backend/agentcore_bundle/.bedrock_agentcore.yaml
+backend/agentcore_bundle/.bedrock_agentcore/
+demand-forecasting/agentcore-deploy/agents/*.py
+!demand-forecasting/agentcore-deploy/agents/__init__.py
+demand-forecasting/agentcore-deploy/data/*.csv
+demand-forecasting/agentcore-deploy/data/s3_data_loader.py
+demand-forecasting/agentcore-deploy/data/chronos_client.py
+
+# AgentCore toolkit config (generated per-account, contains ARNs and agent IDs)
+.bedrock_agentcore.yaml
+.bedrock_agentcore/
+
+# Frontend build
+procurement-agent-ui/dist/
+backend/aws/cdk/lambda_layer/build/
+.env.production
+.kiro/
+.playwright-mcp/
+backend/aws/lambda_tools/csv_data/
+.bedrock_agentcore.yaml.bak
+.bedrock_agentcore.yaml
+*.bak

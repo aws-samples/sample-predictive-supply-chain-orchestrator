@@ -1,0 +1,4 @@
+# Generated deployment bundle — rebuilt by scripts/package_forecast_agent.sh
+agent-bundle/
+__pycache__/
+*.pyc

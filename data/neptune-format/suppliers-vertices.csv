@@ -1,0 +1,16 @@
+~id,~label,name:String,rating:Double,location:String,financial_stability_score:Double,geopolitical_risk_score:Double,active_status:Bool
+SUP-001,Supplier,Shenzhen LiPower Energy Co.,4.25,Shenzhen China,7.5,3.2,true
+SUP-002,Supplier,Samsung SDI (Korea),4.50,Seoul South Korea,8.2,2.1,true
+SUP-003,Supplier,Panasonic Energy (San Jose),3.80,San Jose USA,6.8,1.5,true
+SUP-004,Supplier,Bafang Electric (Suzhou),4.60,Munich Germany,8.8,1.8,true
+SUP-005,Supplier,Shimano Components (Taipei),4.10,Taipei Taiwan,7.2,2.8,true
+SUP-006,Supplier,Bosch eBike Systems,3.90,Detroit USA,7.0,1.5,true
+SUP-007,Supplier,Giant Manufacturing Co.,4.40,Portland USA,8.0,1.5,true
+SUP-008,Supplier,Merida Industry Co.,4.70,Nagoya Japan,9.0,2.0,true
+SUP-009,Supplier,Reynolds Technology (UK),4.00,Manchester UK,7.5,2.2,true
+SUP-010,Supplier,Garmin Display Systems,3.75,Bangalore India,6.5,3.5,true
+SUP-011,Supplier,Continental Electronics,4.20,Austin USA,7.8,1.5,true
+SUP-012,Supplier,Sigma Sport (Germany),3.95,Guangzhou China,7.0,3.2,true
+SUP-013,Supplier,DT Swiss AG,4.35,Amsterdam Netherlands,8.3,1.7,true
+SUP-014,Supplier,Mavic SAS (France),4.05,Chicago USA,7.4,1.5,true
+SUP-015,Supplier,SRAM Corporation,4.65,Stuttgart Germany,8.9,1.8,true

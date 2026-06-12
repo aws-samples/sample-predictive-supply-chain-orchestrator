@@ -1,0 +1,16 @@
+contract_id,supplier_id,contract_type,start_date,end_date,annual_value,payment_terms,volume_commitment,price_adjustment_clause,sustainability_clause,status,renewal_option
+CON001,SUP001,Long-term Supply,2025-01-01,2027-12-31,2100000.00,Net 45,10000 units,CPI-based annual adjustment,Carbon neutral shipping required,Active,2-year extension
+CON002,SUP002,Long-term Supply,2025-01-01,2027-12-31,2640000.00,Net 30,12000 units,Fixed price year 1 then CPI,Recycled materials preferred,Active,2-year extension
+CON003,SUP003,Strategic Partnership,2024-06-01,2027-05-31,4800000.00,Net 60,12000 units,Quarterly review,ISO 14001 certified required,Active,3-year extension
+CON004,SUP004,Standard Supply,2025-01-01,2026-12-31,540000.00,Net 30,12000 units,Annual negotiation,None,Active,1-year extension
+CON005,SUP005,Long-term Supply,2025-01-01,2027-12-31,900000.00,Net 45,12000 units,CPI-based adjustment,Sustainable sourcing,Active,2-year extension
+CON006,SUP006,Premium Supply,2025-01-01,2026-12-31,1200000.00,Net 30,6000 units,Fixed price,Carbon offset program,Active,1-year extension
+CON007,SUP007,Standard Supply,2025-01-01,2026-12-31,780000.00,Net 45,6000 units,Annual negotiation,None,Active,1-year extension
+CON008,SUP008,Long-term Supply,2025-01-01,2027-12-31,1020000.00,Net 30,12000 units,CPI-based adjustment,Recycling program,Active,2-year extension
+CON009,SUP009,Strategic Partnership,2024-06-01,2027-05-31,1440000.00,Net 60,12000 units,Quarterly review,ISO 14001 certified,Active,3-year extension
+CON010,SUP010,Long-term Supply,2025-01-01,2027-12-31,1320000.00,Net 45,12000 units,CPI-based adjustment,Sustainable manufacturing,Active,2-year extension
+CON011,SUP011,Spot Purchase,2026-01-01,2026-12-31,960000.00,Net 30,No commitment,Market-based pricing,None,Active,None
+CON012,SUP012,Standard Supply,2025-01-01,2026-12-31,1020000.00,Net 30,12000 units,Annual negotiation,Recycled materials,Active,1-year extension
+CON013,SUP013,Long-term Supply,2025-01-01,2027-12-31,1080000.00,Net 60,12000 units,CPI-based adjustment,Carbon neutral operations,Active,2-year extension
+CON014,SUP014,Standard Supply,2025-01-01,2026-12-31,960000.00,Net 45,12000 units,Annual negotiation,None,Active,1-year extension
+CON015,SUP015,Long-term Supply,2025-01-01,2027-12-31,1140000.00,Net 30,12000 units,CPI-based adjustment,Sustainable packaging,Active,2-year extension

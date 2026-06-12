@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demand Forecasting Data Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .nav-links {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-link {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 0.9em;
+            transition: background 0.3s;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .nav-link.active {
+            background: rgba(255,255,255,0.4);
+            border-color: white;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f5f5f5;
+            border-bottom: 2px solid #ddd;
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            font-size: 1em;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .tab:hover {
+            background: #e0e0e0;
+        }
+
+        .tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .dataset {
+            display: none;
+        }
+
+        .dataset.active {
+            display: block;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .stat-card h3 {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .value {
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+        }
+
+        thead {
+            background: #f8f9fa;
+            position: sticky;
+            top: 0;
+        }
+
+        th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #ddd;
+        }
+
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .filter-section {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-section label {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .filter-section select,
+        .filter-section input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+
+        .badge-scheduled { background: #d4edda; color: #155724; }
+        .badge-wear { background: #fff3cd; color: #856404; }
+        .badge-accident { background: #f8d7da; color: #721c24; }
+        .badge-weather { background: #d1ecf1; color: #0c5460; }
+        .badge-urban { background: #cfe2ff; color: #084298; }
+        .badge-mountain { background: #e2d9f3; color: #432874; }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="nav-links">
+                <a href="/data/data_viewer.html" class="nav-link active">📊 Data Viewer</a>
+                <a href="/frontend/demand-forecasting.html" class="nav-link">💬 Agent Chat</a>
+                <a href="/frontend/forecast-calculator-v2.html" class="nav-link">🔮 Forecast Calculator</a>
+            </div>
+            <h1>📊 Demand Forecasting Data Viewer</h1>
+            <p>E-Bike Manufacturing - Historical Sales & Maintenance Data</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showDataset('sales')">🚲 Bike Sales</button>
+            <button class="tab" onclick="showDataset('maintenance')">🔧 Maintenance</button>
+            <button class="tab" onclick="showDataset('holidays')">📅 Holidays</button>
+            <button class="tab" onclick="showDataset('weather')">🌤️ Weather</button>
+        </div>
+
+        <div class="content">
+            <!-- Sales Dataset -->
+            <div id="sales" class="dataset active">
+                <div class="stats" id="salesStats"></div>
+                <div class="filter-section">
+                    <label>Product:</label>
+                    <select id="salesProductFilter" onchange="filterSales()">
+                        <option value="">All Products</option>
+                    </select>
+                    <label>Date Range:</label>
+                    <input type="date" id="salesStartDate" onchange="filterSales()">
+                    <input type="date" id="salesEndDate" onchange="filterSales()">
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Transaction ID</th>
+                                <th>Date & Time</th>
+                                <th>Product</th>
+                                <th>Quantity</th>
+                            </tr>
+                        </thead>
+                        <tbody id="salesTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Maintenance Dataset -->
+            <div id="maintenance" class="dataset">
+                <div class="stats" id="maintenanceStats"></div>
+                <div class="filter-section">
+                    <label>Type:</label>
+                    <select id="maintenanceTypeFilter" onchange="filterMaintenance()">
+                        <option value="">All Types</option>
+                    </select>
+                    <label>Material:</label>
+                    <select id="maintenanceMaterialFilter" onchange="filterMaintenance()">
+                        <option value="">All Materials</option>
+                    </select>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Maintenance ID</th>
+                                <th>Date</th>
+                                <th>Material</th>
+                                <th>Qty</th>
+                                <th>Type</th>
+                                <th>Bike Age</th>
+                                <th>Mileage</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="maintenanceTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Holidays Dataset -->
+            <div id="holidays" class="dataset">
+                <div class="stats" id="holidaysStats"></div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Holiday Name</th>
+                                <th>Country</th>
+                                <th>Major Holiday</th>
+                            </tr>
+                        </thead>
+                        <tbody id="holidaysTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Weather Dataset -->
+            <div id="weather" class="dataset">
+                <div class="stats" id="weatherStats"></div>
+                <div class="filter-section">
+                    <label>Region:</label>
+                    <select id="weatherRegionFilter" onchange="filterWeather()">
+                        <option value="">All Regions</option>
+                    </select>
+                    <label>Season:</label>
+                    <select id="weatherSeasonFilter" onchange="filterWeather()">
+                        <option value="">All Seasons</option>
+                    </select>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Season</th>
+                                <th>Year</th>
+                                <th>Region</th>
+                                <th>Avg Temp (°F)</th>
+                                <th>Precipitation (in)</th>
+                                <th>Wind Speed (mph)</th>
+                                <th>Humidity (%)</th>
+                                <th>Extreme Days</th>
+                                <th>Bike Usage Index</th>
+                            </tr>
+                        </thead>
+                        <tbody id="weatherTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.3.3/dist/purify.min.js" integrity="sha384-pcBjnGbkyKeOXaoFkmJiuR9E08/6gkmus6/Strimnxtl3uk0Hx23v345pWyC/MMr" crossorigin="anonymous"></script>
+    <script>
+        let salesData = [];
+        let maintenanceData = [];
+        let holidaysData = [];
+        let weatherData = [];
+
+        // DOM builder helper — constructs elements without innerHTML (no XSS sink).
+        // Children that are strings/numbers become text nodes, so values are never parsed as HTML.
+        function makeEl(tag, props, ...children) {
+            const node = document.createElement(tag);
+            if (props) {
+                for (const [k, v] of Object.entries(props)) {
+                    if (v == null) continue;
+                    if (k === 'class') node.className = v;
+                    else if (k === 'style') node.style.cssText = v;
+                    else if (k.slice(0, 2) === 'on' && typeof v === 'function') node.addEventListener(k.slice(2), v);
+                    else node.setAttribute(k, v);
+                }
+            }
+            for (const c of children.flat()) {
+                if (c == null || c === false) continue;
+                node.appendChild(c instanceof Node ? c : document.createTextNode(String(c)));
+            }
+            return node;
+        }
+        function statCard(title, value) {
+            return makeEl('div', { class: 'stat-card' },
+                makeEl('h3', null, title),
+                makeEl('div', { class: 'value' }, value));
+        }
+
+        // Load CSV data
+        async function loadCSV(filename) {
+            const response = await fetch(filename);
+            const text = await response.text();
+            const lines = text.trim().split('\n');
+            const headers = lines[0].split(',');
+            
+            return lines.slice(1).map(line => {
+                const values = line.split(',');
+                const obj = {};
+                headers.forEach((header, i) => {
+                    obj[header.trim()] = values[i]?.trim() || '';
+                });
+                return obj;
+            });
+        }
+
+        // Initialize data
+        async function init() {
+            try {
+                salesData = await loadCSV('bike_sales_history.csv');
+                maintenanceData = await loadCSV('maintenance_demand_history.csv');
+                holidaysData = await loadCSV('holiday_calendar.csv');
+                weatherData = await loadCSV('weather_seasonal_data.csv');
+
+                renderSales();
+                renderMaintenance();
+                renderHolidays();
+                renderWeather();
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.querySelector('.content').replaceChildren(
+                    makeEl('div', { class: 'error' }, 'Error loading data files. Make sure CSV files are in the same directory.'));
+            }
+        }
+
+        // Show dataset
+        function showDataset(name) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.dataset').forEach(ds => ds.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(name).classList.add('active');
+        }
+
+        // Render Sales
+        function renderSales() {
+            const products = [...new Set(salesData.map(r => r.product_id))];
+            const productFilter = document.getElementById('salesProductFilter');
+            products.forEach(p => {
+                const option = document.createElement('option');
+                option.value = p;
+                option.textContent = p.replace('EBIKE-', '').replace('-2024', '');
+                productFilter.appendChild(option);
+            });
+
+            const totalSales = salesData.reduce((sum, r) => sum + parseInt(r.quantity_sold), 0);
+            const urbanSales = salesData.filter(r => r.product_id.includes('URBAN'))
+                .reduce((sum, r) => sum + parseInt(r.quantity_sold), 0);
+            const mountainSales = salesData.filter(r => r.product_id.includes('MOUNTAIN'))
+                .reduce((sum, r) => sum + parseInt(r.quantity_sold), 0);
+
+            document.getElementById('salesStats').replaceChildren(
+                statCard('Total Transactions', salesData.length),
+                statCard('Total Bikes Sold', totalSales),
+                statCard('Urban Bikes', urbanSales),
+                statCard('Mountain Bikes', mountainSales)
+            );
+
+            filterSales();
+        }
+
+        function filterSales() {
+            const productFilter = document.getElementById('salesProductFilter').value;
+            const startDate = document.getElementById('salesStartDate').value;
+            const endDate = document.getElementById('salesEndDate').value;
+
+            let filtered = salesData;
+            if (productFilter) filtered = filtered.filter(r => r.product_id === productFilter);
+            if (startDate) filtered = filtered.filter(r => r.timestamp >= startDate);
+            if (endDate) filtered = filtered.filter(r => r.timestamp <= endDate);
+
+            const tbody = document.getElementById('salesTable');
+            tbody.replaceChildren(...filtered.slice(0, 100).map(row =>
+                makeEl('tr', null,
+                    makeEl('td', null, row.transaction_id),
+                    makeEl('td', null, row.timestamp),
+                    makeEl('td', null, makeEl('span',
+                        { class: `badge ${row.product_id.includes('URBAN') ? 'badge-urban' : 'badge-mountain'}` },
+                        row.product_id.replace('EBIKE-', '').replace('-2024', ''))),
+                    makeEl('td', null, row.quantity_sold)
+                )
+            ));
+
+            if (filtered.length > 100) {
+                tbody.appendChild(makeEl('tr', null,
+                    makeEl('td', { colspan: '4', style: 'text-align:center;color:#666;' },
+                        `Showing first 100 of ${filtered.length} records`)));
+            }
+        }
+
+        // Render Maintenance
+        function renderMaintenance() {
+            const types = [...new Set(maintenanceData.map(r => r.maintenance_type))];
+            const materials = [...new Set(maintenanceData.map(r => r.material_id))];
+            
+            const typeFilter = document.getElementById('maintenanceTypeFilter');
+            types.forEach(t => {
+                const option = document.createElement('option');
+                option.value = t;
+                option.textContent = t.replace(/_/g, ' ');
+                typeFilter.appendChild(option);
+            });
+
+            const materialFilter = document.getElementById('maintenanceMaterialFilter');
+            materials.forEach(m => {
+                const option = document.createElement('option');
+                option.value = m;
+                option.textContent = m;
+                materialFilter.appendChild(option);
+            });
+
+            const scheduled = maintenanceData.filter(r => r.maintenance_type === 'SCHEDULED_MAINTENANCE').length;
+            const wear = maintenanceData.filter(r => r.maintenance_type === 'WEAR_REPLACEMENT').length;
+            const totalQty = maintenanceData.reduce((sum, r) => sum + parseInt(r.quantity), 0);
+
+            document.getElementById('maintenanceStats').replaceChildren(
+                statCard('Total Events', maintenanceData.length),
+                statCard('Scheduled', scheduled),
+                statCard('Wear Replacement', wear),
+                statCard('Total Parts', totalQty)
+            );
+
+            filterMaintenance();
+        }
+
+        function filterMaintenance() {
+            const typeFilter = document.getElementById('maintenanceTypeFilter').value;
+            const materialFilter = document.getElementById('maintenanceMaterialFilter').value;
+
+            let filtered = maintenanceData;
+            if (typeFilter) filtered = filtered.filter(r => r.maintenance_type === typeFilter);
+            if (materialFilter) filtered = filtered.filter(r => r.material_id === materialFilter);
+
+            const tbody = document.getElementById('maintenanceTable');
+            tbody.replaceChildren(...filtered.slice(0, 100).map(row => {
+                let badgeClass = 'badge-scheduled';
+                if (row.maintenance_type === 'WEAR_REPLACEMENT') badgeClass = 'badge-wear';
+                if (row.maintenance_type === 'ACCIDENT_REPAIR') badgeClass = 'badge-accident';
+                if (row.maintenance_type === 'WEATHER_DAMAGE') badgeClass = 'badge-weather';
+
+                return makeEl('tr', null,
+                    makeEl('td', null, row.maintenance_id),
+                    makeEl('td', null, row.timestamp),
+                    makeEl('td', null, row.material_id),
+                    makeEl('td', null, row.quantity),
+                    makeEl('td', null, makeEl('span', { class: `badge ${badgeClass}` }, row.maintenance_type.replace(/_/g, ' '))),
+                    makeEl('td', null, `${row.bike_age_months} mo`),
+                    makeEl('td', null, `${row.mileage} mi`),
+                    makeEl('td', null, row.notes)
+                );
+            }));
+
+            if (filtered.length > 100) {
+                tbody.appendChild(makeEl('tr', null,
+                    makeEl('td', { colspan: '8', style: 'text-align:center;color:#666;' },
+                        `Showing first 100 of ${filtered.length} records`)));
+            }
+        }
+
+        // Render Holidays
+        function renderHolidays() {
+            const major = holidaysData.filter(r => r.is_major_holiday === '1').length;
+
+            document.getElementById('holidaysStats').replaceChildren(
+                statCard('Total Holidays', holidaysData.length),
+                statCard('Major Holidays', major)
+            );
+
+            const tbody = document.getElementById('holidaysTable');
+            tbody.replaceChildren(...holidaysData.map(row =>
+                makeEl('tr', null,
+                    makeEl('td', null, row.date),
+                    makeEl('td', null, row.holiday_name),
+                    makeEl('td', null, row.country),
+                    makeEl('td', null, row.is_major_holiday === '1' ? '✓ Yes' : 'No')
+                )
+            ));
+        }
+
+        // Render Weather
+        function renderWeather() {
+            const regions = [...new Set(weatherData.map(r => r.region))];
+            const seasons = [...new Set(weatherData.map(r => r.season))];
+
+            const regionFilter = document.getElementById('weatherRegionFilter');
+            regions.forEach(r => {
+                const option = document.createElement('option');
+                option.value = r;
+                option.textContent = r.replace(/_/g, ' ');
+                regionFilter.appendChild(option);
+            });
+
+            const seasonFilter = document.getElementById('weatherSeasonFilter');
+            seasons.forEach(s => {
+                const option = document.createElement('option');
+                option.value = s;
+                option.textContent = s;
+                seasonFilter.appendChild(option);
+            });
+
+            document.getElementById('weatherStats').replaceChildren(
+                statCard('Regions', regions.length),
+                statCard('Seasons', seasons.length)
+            );
+
+            filterWeather();
+        }
+
+        function filterWeather() {
+            const regionFilter = document.getElementById('weatherRegionFilter').value;
+            const seasonFilter = document.getElementById('weatherSeasonFilter').value;
+
+            let filtered = weatherData;
+            if (regionFilter) filtered = filtered.filter(r => r.region === regionFilter);
+            if (seasonFilter) filtered = filtered.filter(r => r.season === seasonFilter);
+
+            const tbody = document.getElementById('weatherTable');
+            tbody.replaceChildren(...filtered.map(row =>
+                makeEl('tr', null,
+                    makeEl('td', null, row.season),
+                    makeEl('td', null, row.year),
+                    makeEl('td', null, row.region.replace(/_/g, ' ')),
+                    makeEl('td', null, row.avg_temperature),
+                    makeEl('td', null, row.avg_precipitation),
+                    makeEl('td', null, row.avg_wind_speed),
+                    makeEl('td', null, row.avg_humidity),
+                    makeEl('td', null, row.extreme_weather_days),
+                    makeEl('td', null, row.bike_usage_index)
+                )
+            ));
+        }
+
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>

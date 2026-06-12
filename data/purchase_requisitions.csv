@@ -1,0 +1,19 @@
+req_id,material_id,quantity_requested,requested_by,requested_date,required_date,urgency_level,justification,status,req_type
+PR001,MAT001,500,John Smith,2026-02-20,2026-03-15,High,Q1 production requirements,Approved,Planned
+PR002,MAT002,500,John Smith,2026-02-20,2026-03-15,High,Q1 production requirements,Approved,Planned
+PR003,MAT003,500,John Smith,2026-02-20,2026-03-15,High,Critical battery component,Approved,Planned
+PR004,MAT004,1000,John Smith,2026-02-20,2026-03-15,High,Wheel sets for Q1,Approved,Planned
+PR005,MAT005,500,John Smith,2026-02-20,2026-03-15,Medium,Standard component,Approved,Planned
+PR006,MAT011,250,Sarah Johnson,2026-02-20,2026-03-15,Medium,Premium model production,Approved,Planned
+PR007,MAT012,250,Sarah Johnson,2026-02-20,2026-03-15,Medium,Standard model production,Approved,Planned
+PR008,MAT013,500,Mike Chen,2026-02-20,2026-03-15,High,Safety critical component,Approved,Planned
+PR009,MAT006,500,Emily Davis,2026-02-20,2026-03-15,Medium,Display units Q1,Approved,Planned
+PR010,MAT007,500,Emily Davis,2026-02-20,2026-03-15,High,Controller units Q1,Approved,Planned
+PR011,MAT003,100,John Smith,2026-02-25,2026-03-05,Critical,Unexpected production increase,Approved,Unplanned
+PR012,MAT008,80,Emily Davis,2026-02-26,2026-03-08,High,Sensor shortage,Approved,Unplanned
+PR013,MAT001,120,Sarah Johnson,2026-02-27,2026-03-10,High,Frame shortage due to quality issue,Approved,Unplanned
+PR014,MAT013,150,Mike Chen,2026-02-28,2026-03-12,Critical,Brake system recall replacement,Approved,Unplanned
+PR015,MAT004,200,John Smith,2026-03-01,2026-03-15,High,Wheel defect replacement,Approved,Unplanned
+PR016,MAT009,100,Emily Davis,2026-03-02,2026-03-14,Medium,Wiring harness shortage,Pending,Unplanned
+PR017,MAT014,80,Sarah Johnson,2026-03-03,2026-03-16,Low,Pedal inventory adjustment,Pending,Unplanned
+PR018,MAT015,90,Mike Chen,2026-03-04,2026-03-18,Medium,Handlebar design change,Pending,Unplanned

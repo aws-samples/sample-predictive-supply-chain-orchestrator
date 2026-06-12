@@ -1,0 +1,13 @@
+schedule_id,product_id,product_name,planned_quantity,start_date,end_date,status,priority,notes
+PS001,PROD001,Urban Commuter E-Bike,250,2026-03-01,2026-03-15,Planned,High,Q1 production batch 1
+PS002,PROD002,Mountain Trail E-Bike,200,2026-03-01,2026-03-15,Planned,High,Q1 production batch 1
+PS003,PROD001,Urban Commuter E-Bike,270,2026-03-16,2026-03-31,Planned,Medium,Q1 production batch 2
+PS004,PROD002,Mountain Trail E-Bike,230,2026-03-16,2026-03-31,Planned,Medium,Q1 production batch 2
+PS005,PROD001,Urban Commuter E-Bike,300,2026-04-01,2026-04-15,Planned,High,Spring season ramp-up
+PS006,PROD002,Mountain Trail E-Bike,220,2026-04-01,2026-04-15,Planned,High,Spring season production
+PS007,PROD001,Urban Commuter E-Bike,320,2026-04-16,2026-04-30,Planned,Medium,Spring peak production
+PS008,PROD002,Mountain Trail E-Bike,200,2026-04-16,2026-04-30,Planned,Medium,Steady production
+PS009,PROD001,Urban Commuter E-Bike,350,2026-05-01,2026-05-15,Planned,High,Peak season preparation
+PS010,PROD002,Mountain Trail E-Bike,230,2026-05-01,2026-05-15,Planned,High,Peak season batch 1
+PS011,PROD001,Urban Commuter E-Bike,330,2026-05-16,2026-05-31,Planned,Medium,Peak season batch 2
+PS012,PROD002,Mountain Trail E-Bike,250,2026-05-16,2026-05-31,Planned,Medium,Peak season batch 2

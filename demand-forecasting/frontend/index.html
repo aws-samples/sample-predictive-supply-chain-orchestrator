@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-bike Supply Chain Platform</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            min-height: 100vh; color: #e2e8f0;
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+        .header { text-align: center; margin-bottom: 50px; }
+        .header h1 { font-size: 2.8em; margin-bottom: 10px; }
+        .header h1 span { background: linear-gradient(135deg, #667eea, #22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .header p { color: #94a3b8; font-size: 1.2em; }
+        .status-bar {
+            display: flex; justify-content: center; gap: 30px;
+            margin-bottom: 40px; flex-wrap: wrap;
+        }
+        .status-item {
+            display: flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,0.05); padding: 10px 20px;
+            border-radius: 10px; font-size: 0.95em;
+        }
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
+        .dot.green { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
+        .dot.red { background: #ef4444; box-shadow: 0 0 8px #ef4444; }
+        .dot.checking { background: #eab308; animation: pulse 1s infinite; }
+        @keyframes pulse { 50% { opacity: 0.4; } }
+        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 50px; }
+        .card {
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px; padding: 30px; text-decoration: none; color: #e2e8f0;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; cursor: pointer; display: block;
+            position: relative; z-index: 1; pointer-events: auto;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); border-color: rgba(102,126,234,0.4); }
+        .card .icon { font-size: 2.5em; margin-bottom: 16px; }
+        .card h3 { font-size: 1.3em; margin-bottom: 8px; }
+        .card p { color: #94a3b8; font-size: 0.95em; line-height: 1.5; }
+        .card .tag {
+            display: inline-block; margin-top: 14px; padding: 4px 12px;
+            border-radius: 20px; font-size: 0.8em; font-weight: 600;
+        }
+        .tag.forecast { background: rgba(34,211,238,0.15); color: #22d3ee; }
+        .tag.procurement { background: rgba(168,85,247,0.15); color: #a855f7; }
+        .section-label { text-align: center; color: #64748b; font-size: 0.85em; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; }
+        .divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 40px 0 30px; }
+        .footer { text-align: center; color: #475569; font-size: 0.85em; margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚴 <span>E-bike Supply Chain Platform</span></h1>
+            <p>Demand Forecasting + Procurement Optimization</p>
+        </div>
+        <div class="status-bar">
+            <div class="status-item">
+                <span class="dot checking" id="dotForecast"></span>
+                <span>Demand Forecasting (8888)</span>
+            </div>
+            <div class="status-item">
+                <span class="dot checking" id="dotProcurement"></span>
+                <span>Procurement Optimization (5001)</span>
+            </div>
+        </div>
+
+        <div class="section-label">Demand Forecasting</div>
+        <div class="cards">
+            <a class="card" href="/data/data_viewer.html">
+                <div class="icon">📊</div>
+                <h3>Data Viewer</h3>
+                <p>Explore raw materials, BOM, and maintenance data. Browse and filter the shared CSV datasets.</p>
+                <span class="tag forecast">Data</span>
+            </a>
+            <a class="card" href="/frontend/demand-forecasting.html">
+                <div class="icon">🤖</div>
+                <h3>Agent Chat</h3>
+                <p>Chat with the Seasonal Analysis and Chronos Forecasting agents to analyze demand patterns.</p>
+                <span class="tag forecast">AI Agent</span>
+            </a>
+            <a class="card" href="/frontend/forecast-calculator-v2.html">
+                <div class="icon">🔮</div>
+                <h3>Forecast Calculator</h3>
+                <p>Run Chronos-2 forecasts with confidence intervals. Visualize predictions with explainability stats.</p>
+                <span class="tag forecast">Forecast</span>
+            </a>
+        </div>
+
+        <hr class="divider">
+
+        <div class="section-label">Procurement Optimization</div>
+        <div class="cards">
+            <!-- nosemgrep: plaintext-http-link -- localhost dev server link, not served over TLS -->
+            <a class="card" href="http://localhost:5174" target="_blank">
+                <div class="icon">🏭</div>
+                <h3>Procurement Dashboard</h3>
+                <p>Full procurement UI with agent chat, Pareto optimization, supplier risk map, inventory gap analysis, and PR approvals.</p>
+                <span class="tag procurement">Dashboard</span>
+            </a>
+            <!-- nosemgrep: plaintext-http-link -- localhost dev server link, not served over TLS -->
+            <a class="card" href="http://localhost:5001/api/docs" target="_blank">
+                <div class="icon">⚙️</div>
+                <h3>Optimization API (Swagger)</h3>
+                <p>Interactive API docs for supplier optimization. Run Pareto frontier analysis and create purchase requisitions.</p>
+                <span class="tag procurement">API</span>
+            </a>
+            <!-- nosemgrep: plaintext-http-link -- localhost dev server link, not served over TLS -->
+            <a class="card" href="http://localhost:5001/api/suppliers" target="_blank">
+                <div class="icon">🔩</div>
+                <h3>Suppliers & Materials</h3>
+                <p>View all suppliers with ratings, financial stability, geopolitical risk scores, and materials catalog.</p>
+                <span class="tag procurement">Data</span>
+            </a>
+        </div>
+
+        <div class="footer">E-bike Supply Chain Platform &mdash; Demand Forecasting (port 8888) + Procurement Optimization (port 5001)</div>
+    </div>
+
+    <script>
+        // Ensure card clicks work as navigation
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('click', function(e) {
+                e.preventDefault();
+                const url = this.getAttribute('href');
+                const target = this.getAttribute('target');
+                if (target === '_blank') {
+                    window.open(url, '_blank');
+                } else {
+                    window.location.href = url;
+                }
+            });
+        });
+
+        async function checkHealth(url, dotId) {
+            const dot = document.getElementById(dotId);
+            try {
+                const res = await fetch(url, { mode: 'cors', signal: AbortSignal.timeout(3000) });
+                if (res.ok) { dot.className = 'dot green'; }
+                else { dot.className = 'dot red'; }
+            } catch (e) {
+                dot.className = 'dot red';
+            }
+        }
+        checkHealth('http://localhost:8888/api/health', 'dotForecast');
+        checkHealth('http://localhost:5001/health', 'dotProcurement');
+        // Re-check every 15 seconds
+        setInterval(() => {
+            checkHealth('http://localhost:8888/api/health', 'dotForecast');
+            checkHealth('http://localhost:5001/health', 'dotProcurement');
+        }, 15000);
+    </script>
+</body>
+</html>

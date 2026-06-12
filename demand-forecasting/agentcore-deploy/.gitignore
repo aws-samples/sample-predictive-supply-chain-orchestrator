@@ -1,0 +1,11 @@
+# Copied/generated files — not source of truth
+# These are assembled by deploy-all.sh from demand-forecasting/agents/ and demand-forecasting/data/
+agents/seasonal_analysis_agent.py
+agents/chronos_forecasting_agent.py
+data/*.csv
+data/s3_data_loader.py
+data/chronos_client.py
+.bedrock_agentcore.yaml
+.bedrock_agentcore/
+__pycache__/
+*.pyc

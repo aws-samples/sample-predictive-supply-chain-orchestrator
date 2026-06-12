@@ -1,0 +1,52 @@
+spec_id,material_id,specification_type,spec_key,spec_value,unit,tolerance,critical_spec,certification_required
+SPEC001,MAT001,Physical,Frame Material,Aluminum 6061,NULL,NULL,Yes,ISO 4210
+SPEC002,MAT001,Physical,Frame Weight,2.8,kg,±0.1,Yes,NULL
+SPEC003,MAT001,Physical,Frame Size Range,S/M/L/XL,NULL,NULL,No,NULL
+SPEC004,MAT002,Physical,Frame Material,Carbon Fiber T700,NULL,NULL,Yes,ISO 4210
+SPEC005,MAT002,Physical,Frame Weight,1.9,kg,±0.1,Yes,NULL
+SPEC006,MAT002,Physical,Frame Size Range,M/L/XL,NULL,NULL,No,NULL
+SPEC007,MAT003,Electrical,Battery Capacity,500,Wh,±2%,Yes,UN 38.3
+SPEC008,MAT003,Electrical,Voltage,48,V,±1%,Yes,UL 2271
+SPEC009,MAT003,Electrical,Cell Type,Lithium-ion 21700,NULL,NULL,Yes,NULL
+SPEC010,MAT003,Physical,Battery Weight,3.2,kg,±0.1,No,NULL
+SPEC011,MAT003,Performance,Charge Cycles,1000,cycles,Min,Yes,NULL
+SPEC012,MAT004,Physical,Wheel Size,27.5,inch,±0.1,Yes,ISO 5775
+SPEC013,MAT004,Physical,Rim Material,Aluminum Alloy,NULL,NULL,Yes,NULL
+SPEC014,MAT004,Performance,Max Load,120,kg,Min,Yes,NULL
+SPEC015,MAT005,Electrical,Motor Power,250,W,±5%,Yes,EN 15194
+SPEC016,MAT005,Electrical,Motor Type,Brushless DC,NULL,NULL,Yes,NULL
+SPEC017,MAT005,Performance,Max Torque,40,Nm,±5%,Yes,NULL
+SPEC018,MAT005,Performance,Max RPM,120,rpm,±5%,No,NULL
+SPEC019,MAT006,Electrical,Display Type,LCD Color,NULL,NULL,No,NULL
+SPEC020,MAT006,Electrical,Display Size,3.5,inch,NULL,No,NULL
+SPEC021,MAT006,Environmental,Operating Temp Range,-20 to 60,°C,NULL,Yes,NULL
+SPEC022,MAT006,Environmental,Water Resistance,IP65,NULL,NULL,Yes,IEC 60529
+SPEC023,MAT007,Electrical,Input Voltage,48,V,±10%,Yes,NULL
+SPEC024,MAT007,Electrical,Max Current,15,A,±5%,Yes,UL 2849
+SPEC025,MAT007,Performance,Efficiency,92,%,Min,Yes,NULL
+SPEC026,MAT008,Electrical,Sensor Type,Hall Effect,NULL,NULL,Yes,NULL
+SPEC027,MAT008,Electrical,Operating Voltage,5,V,±5%,Yes,NULL
+SPEC028,MAT008,Performance,Response Time,10,ms,Max,Yes,NULL
+SPEC029,MAT009,Electrical,Wire Gauge,18,AWG,NULL,Yes,UL 758
+SPEC030,MAT009,Physical,Harness Length,2.5,m,±0.1,No,NULL
+SPEC031,MAT009,Environmental,Temperature Rating,-40 to 105,°C,NULL,Yes,NULL
+SPEC032,MAT010,Electrical,Charging Port Type,Type-C PD,NULL,NULL,Yes,USB-IF
+SPEC033,MAT010,Electrical,Max Charging Power,100,W,NULL,Yes,NULL
+SPEC034,MAT010,Environmental,Water Resistance,IP67,NULL,NULL,Yes,IEC 60529
+SPEC035,MAT011,Electrical,Motor Power,350,W,±5%,Yes,EN 15194
+SPEC036,MAT011,Performance,Max Torque,60,Nm,±5%,Yes,NULL
+SPEC037,MAT012,Electrical,Motor Power,250,W,±5%,Yes,EN 15194
+SPEC038,MAT012,Performance,Max Torque,40,Nm,±5%,Yes,NULL
+SPEC039,MAT013,Physical,Brake Type,Hydraulic Disc,NULL,NULL,Yes,ISO 4210
+SPEC040,MAT013,Physical,Rotor Size,180,mm,NULL,Yes,NULL
+SPEC041,MAT013,Performance,Stopping Distance,3.5,m,Max,Yes,NULL
+SPEC042,MAT014,Physical,Pedal Type,Platform,NULL,NULL,No,NULL
+SPEC043,MAT014,Physical,Material,Aluminum Alloy,NULL,NULL,Yes,NULL
+SPEC044,MAT015,Physical,Handlebar Width,680,mm,±5,No,NULL
+SPEC045,MAT015,Physical,Material,Aluminum 6061,NULL,NULL,Yes,NULL
+SPEC046,MAT016,Physical,Seat Type,Ergonomic Comfort,NULL,NULL,No,NULL
+SPEC047,MAT016,Physical,Weight Capacity,120,kg,Min,Yes,NULL
+SPEC048,MAT017,Physical,Suspension Type,Air Spring,NULL,NULL,Yes,NULL
+SPEC049,MAT017,Physical,Travel Distance,120,mm,±5,Yes,NULL
+SPEC050,MAT018,Physical,Chain Type,Single Speed,NULL,NULL,Yes,ISO 9633
+SPEC051,MAT018,Physical,Chain Length,116,links,NULL,No,NULL
