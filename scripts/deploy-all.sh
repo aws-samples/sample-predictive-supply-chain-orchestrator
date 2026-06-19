@@ -69,13 +69,6 @@ rm -f "$PROJECT_ROOT/.bedrock_agentcore.yaml"
 
 echo "═══ Step 0: Build prerequisites ═══"
 
-echo "Syncing canonical core/ and data/ into lambda_tools/..."
-cp -r "$PROJECT_ROOT/backend/core/"* "$PROJECT_ROOT/backend/aws/lambda_tools/core/"
-for f in "$PROJECT_ROOT/backend/data/"*.py; do
-  cp "$f" "$PROJECT_ROOT/backend/aws/lambda_tools/data/"
-done
-echo "  ✓ Lambda tools synced with canonical source"
-
 echo "Building Lambda layer..."
 bash "$CDK_DIR/lambda_layer/build.sh"
 

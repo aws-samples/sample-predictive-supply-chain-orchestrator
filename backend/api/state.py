@@ -119,16 +119,37 @@ if _neptune_endpoint:
     except (ImportError, ConnectionError, OSError) as e:
         logger.warning("neptune_client_init_failed", error=str(e))
 
-# ── Optimization engine ──
+# ── Data reader + Optimization engine ──
 
-data_reader: Optional[CSVDataReader] = None
+data_reader = None
 optimization_engine: Optional[OptimizationEngine] = None
+
+if _neptune_endpoint and neptune_client:
+    try:
+        from data.neptune_data_reader import NeptuneDataReader
+        data_reader = NeptuneDataReader(
+            endpoint=_neptune_endpoint,
+            port=int(os.environ.get("NEPTUNE_PORT", "8182"))
+        )
+        optimization_engine = OptimizationEngine(data_reader)
+        logger.info("optimization_engine_initialized", source="neptune")
+    except (ImportError, ConnectionError, OSError, ValueError) as e:
+        logger.warning("neptune_data_reader_failed_trying_csv", error=str(e))
+
+if data_reader is None:
+    try:
+        data_reader = CSVDataReader(data_dir=os.environ.get("DATA_DIR", "../data"))
+        optimization_engine = OptimizationEngine(data_reader)
+        logger.info("optimization_engine_initialized", source="csv")
+    except (FileNotFoundError, ValueError, OSError) as e:
+        logger.error("optimization_engine_init_failed", error=str(e))
+
+# CSV reader for defect data (not in Neptune)
+csv_data_reader: Optional[CSVDataReader] = None
 try:
-    data_reader = CSVDataReader(data_dir=os.environ.get("DATA_DIR", "../data"))
-    optimization_engine = OptimizationEngine(data_reader)
-    logger.info("optimization_engine_initialized")
-except (FileNotFoundError, ValueError, OSError) as e:
-    logger.error("optimization_engine_init_failed", error=str(e))
+    csv_data_reader = CSVDataReader(data_dir=os.environ.get("DATA_DIR", "../data"))
+except (FileNotFoundError, ValueError, OSError):
+    pass
 
 # ── Procurement agent ──
 

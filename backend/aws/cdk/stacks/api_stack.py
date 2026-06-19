@@ -47,9 +47,16 @@ class ApiStack(Stack):
         gateway_id: str = "",
         memory_id: str = "",
         policy_engine_id: str = "",
+        frontend_url: str = "",
         **kwargs,
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
+
+        cors_origins = [o for o in [
+            frontend_url,
+            "http://localhost:5173",
+            "http://localhost:5174",
+        ] if o]
 
         # Lambda execution role
         api_role = iam.Role(
@@ -174,7 +181,6 @@ class ApiStack(Stack):
                     "bin/*", "bin",
                     "*.so",
                     "boto3/*", "botocore/*", "s3transfer/*", "urllib3/*",
-                    "strands/*", "strands_agents*",
                     "bedrock_agentcore/*", "bedrock_agentcore*",
                     "pydantic/*", "pydantic_core/*",
                     "numpy/*", "numpy*", "scipy/*", "scipy*",
@@ -199,7 +205,7 @@ class ApiStack(Stack):
                 "FLASK_ENV": "production",
                 "DATA_DIR": "/var/task/data",
                 "DATA_PATH": "/var/task/data",
-                "CORS_ORIGINS": "*",
+                "CORS_ORIGINS": ",".join(cors_origins),
                 "PR_S3_BUCKET": data_bucket.bucket_name,
                 "DATA_BUCKET": data_bucket.bucket_name,
                 "BEDROCK_MODEL_ID": "global.anthropic.claude-haiku-4-5-20251001-v1:0",
@@ -213,7 +219,7 @@ class ApiStack(Stack):
                 "AGENTCORE_AGENT_ID": "",
                 "PROCUREMENT_AGENT_ID": "",
                 "FORECAST_AGENT_ID": "",
-                "AGENT_MODE": "agentcore",
+                "AGENT_MODE": "local",
                 "SAGEMAKER_ENDPOINT_NAME": "chronos-2-forecast-endpoint",
                 "FORECAST_DATA_PREFIX": "forecast-data/",
             },
@@ -241,9 +247,9 @@ class ApiStack(Stack):
             rest_api_name="procurement-agent-api",
             description="Procurement Agent REST API",
             default_cors_preflight_options=apigw.CorsOptions(
-                allow_origins=apigw.Cors.ALL_ORIGINS,
+                allow_origins=cors_origins,
                 allow_methods=apigw.Cors.ALL_METHODS,
-                allow_headers=["Content-Type", "Authorization"],
+                allow_headers=["Content-Type", "Authorization", "X-Access-Token", "X-Session-Id"],
             ),
             default_method_options=apigw.MethodOptions(
                 authorization_type=apigw.AuthorizationType.COGNITO,
@@ -286,7 +292,7 @@ class ApiStack(Stack):
                 f"CorsResponse{status_code}",
                 type=response_type,
                 response_headers={
-                    "Access-Control-Allow-Origin": "'*'",
+                    "Access-Control-Allow-Origin": f"'{cors_origins[0]}'" if cors_origins else "'*'",
                     "Access-Control-Allow-Headers": "'Content-Type,Authorization'",
                     "Access-Control-Allow-Methods": "'OPTIONS,GET,POST,PUT,DELETE'",
                 },

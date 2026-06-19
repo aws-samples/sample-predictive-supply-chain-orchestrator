@@ -21,6 +21,10 @@ export async function authHeaders(): Promise<Record<string, string>> {
   const token = await getIdToken();
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (token) headers['Authorization'] = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+  try {
+    const accessToken = await getAccessToken();
+    if (accessToken) headers['X-Access-Token'] = accessToken;
+  } catch { /* access token optional */ }
   return headers;
 }
 
@@ -97,8 +101,7 @@ export interface HealthCheckResponse {
 export async function checkHealth(): Promise<HealthCheckResponse | null> {
   try {
     const response = await fetch(`${API_BASE_URL}/health`, {
-      headers: await authHeaders(),
-      signal: AbortSignal.timeout(2000),
+      signal: AbortSignal.timeout(8000),
     });
 
     if (!response.ok) {

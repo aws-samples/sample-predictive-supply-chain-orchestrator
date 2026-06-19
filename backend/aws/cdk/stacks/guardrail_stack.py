@@ -46,7 +46,7 @@ class GuardrailStack(Stack):
                         {"Type": "HATE", "InputStrength": "HIGH", "OutputStrength": "HIGH"},
                         {"Type": "INSULTS", "InputStrength": "HIGH", "OutputStrength": "HIGH"},
                         {"Type": "MISCONDUCT", "InputStrength": "HIGH", "OutputStrength": "HIGH"},
-                        {"Type": "PROMPT_ATTACK", "InputStrength": "HIGH", "OutputStrength": "NONE"},
+                        {"Type": "PROMPT_ATTACK", "InputStrength": "MEDIUM", "OutputStrength": "NONE"},
                     ],
                 },
                 "TopicPolicyConfig": {

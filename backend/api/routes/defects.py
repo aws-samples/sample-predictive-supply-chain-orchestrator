@@ -14,7 +14,7 @@ defects_bp = Blueprint("defects", __name__)
 
 @defects_bp.route("/api/defects", methods=["GET"])
 def get_defects():
-    from api.state import data_reader
+    from api.state import csv_data_reader as data_reader
 
     try:
         defects = data_reader.get_defects()
@@ -57,7 +57,7 @@ def get_defects():
 
 @defects_bp.route("/api/defects/summary", methods=["GET"])
 def get_defect_summary():
-    from api.state import data_reader
+    from api.state import csv_data_reader as data_reader
 
     try:
         defects = data_reader.get_defects()
@@ -132,7 +132,7 @@ def get_defect_summary():
 
 @defects_bp.route("/api/defects/<defect_id>/recall", methods=["POST"])
 def initiate_recall(defect_id: str):
-    from api.state import data_reader
+    from api.state import csv_data_reader as data_reader
 
     try:
         if not re.match(r"^DEF-\d{3}$", defect_id):
@@ -170,7 +170,7 @@ def initiate_recall(defect_id: str):
 
 @defects_bp.route("/api/defects/report", methods=["GET"])
 def get_defect_report():
-    from api.state import data_reader
+    from api.state import csv_data_reader as data_reader
 
     try:
         supplier_id = request.args.get("supplier_id")
