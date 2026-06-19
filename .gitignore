@@ -95,3 +95,4 @@ backend/aws/lambda_tools/csv_data/
 .bedrock_agentcore.yaml.bak
 .bedrock_agentcore.yaml
 *.bak
+CLAUDE.md
