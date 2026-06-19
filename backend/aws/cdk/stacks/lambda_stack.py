@@ -9,7 +9,6 @@ Follows CDE standards:
 """
 
 import os
-import shutil
 
 from aws_cdk import (
     Stack,
@@ -26,33 +25,6 @@ from aws_cdk import (
 from constructs import Construct
 from cdk_nag import NagSuppressions
 
-
-def _sync_lambda_tools():
-    """
-    Sync canonical core/ and data/ into lambda_tools/ before CDK packages the asset.
-    This ensures the Lambda deployment always has the latest engine, models, and data reader.
-    """
-    cdk_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    backend_dir = os.path.dirname(cdk_dir)
-    lambda_tools = os.path.join(backend_dir, "lambda_tools")
-    canonical_core = os.path.join(backend_dir, "core")
-    canonical_data = os.path.join(backend_dir, "data")
-
-    # Sync core/ (optimization engine, models)
-    dst_core = os.path.join(lambda_tools, "core")
-    if os.path.exists(canonical_core):
-        shutil.copytree(canonical_core, dst_core, dirs_exist_ok=True)
-
-    # Sync data/ modules (csv_reader, neptune_data_reader) — not CSV files
-    dst_data = os.path.join(lambda_tools, "data")
-    if os.path.exists(canonical_data):
-        for f in os.listdir(canonical_data):
-            if f.endswith(".py"):
-                shutil.copy2(os.path.join(canonical_data, f), os.path.join(dst_data, f))
-
-
-# Run sync at CDK synth time
-_sync_lambda_tools()
 
 
 class LambdaStack(Stack):

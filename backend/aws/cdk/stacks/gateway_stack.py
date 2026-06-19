@@ -223,13 +223,20 @@ class GatewayStack(Stack):
                                     _tool_definition(
                                         name="query_supplier_data",
                                         description=(
-                                            "Query the supplier network graph database. Find alternative "
-                                            "suppliers, retrieve supplier networks, or get supplier details."
+                                            "Query supplier data, run Chronos-2 demand forecasts, and "
+                                            "simulate supply chain risks. Handles all data queries."
                                         ),
                                         input_schema=_schema("object", "Query request", properties={
-                                            "query_type": _schema("string", "Type of query: find_alternative_suppliers, get_supplier_network, or get_supplier_details"),
-                                            "material_id": _schema("string", "Material ID (for find_alternative_suppliers)"),
-                                            "supplier_id": _schema("string", "Supplier ID (for network/details queries)"),
+                                            "query_type": _schema("string", (
+                                                "Type of query: find_alternative_suppliers, get_supplier_network, "
+                                                "get_supplier_details, get_sourcing_summary, get_all_suppliers, "
+                                                "get_supplier_performance, forecast_demand, simulate_risk, "
+                                                "list_risk_scenarios"
+                                            )),
+                                            "material_id": _schema("string", "Material ID e.g. MAT-BAT-001"),
+                                            "supplier_id": _schema("string", "Supplier ID e.g. SUP-001"),
+                                            "scenario_id": _schema("string", "Risk scenario: strait_of_hormuz, suez_canal, taiwan_strait, us_china_tariff, european_port_strike"),
+                                            "prediction_length": _schema("integer", "Forecast days (default 60, max 64)"),
                                             "max_hops": _schema("integer", "Graph traversal depth (1-5)"),
                                             "limit": _schema("integer", "Max results (1-50)"),
                                         }, required=["query_type"]),

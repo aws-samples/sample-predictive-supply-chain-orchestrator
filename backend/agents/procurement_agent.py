@@ -26,8 +26,8 @@ from data.csv_reader import CSVDataReader
 logger = structlog.get_logger()
 
 # Initialize shared data reader and engine
-# Data lives at project_root/data/ (one level above backend/)
-_data_dir = os.environ.get("DATA_DIR", str(Path(__file__).parent.parent.parent / "data"))
+# Lambda: DATA_DIR=/var/task/data; Local dev: ../data (relative to backend/)
+_data_dir = os.environ.get("DATA_DIR", os.environ.get("DATA_PATH", str(Path(__file__).parent.parent / "data")))
 try:
     _data_reader = CSVDataReader(data_dir=_data_dir)
     _engine = OptimizationEngine(_data_reader)
@@ -44,6 +44,19 @@ _pr_store: Dict[str, Dict[str, Any]] = {}
 def _try_import_strands():
     """Try to import Strands SDK; return None if unavailable."""
     try:
+        import os
+        os.environ.setdefault("OTEL_SDK_DISABLED", "true")
+        os.environ.setdefault("OTEL_TRACES_EXPORTER", "none")
+        os.environ.setdefault("OTEL_METRICS_EXPORTER", "none")
+        os.environ.setdefault("OTEL_LOGS_EXPORTER", "none")
+        # Suppress StopIteration from opentelemetry context loading in Lambda
+        try:
+            import opentelemetry.context
+            if not hasattr(opentelemetry.context, '_RUNTIME_CONTEXT'):
+                from opentelemetry.context.contextvars_context import ContextVarsRuntimeContext
+                opentelemetry.context._RUNTIME_CONTEXT = ContextVarsRuntimeContext()
+        except (ImportError, AttributeError, StopIteration):
+            pass
         from strands import Agent
         from strands.models import BedrockModel
         from strands.tools import tool
@@ -507,9 +520,10 @@ def _create_strands_agent():
 _strands_agent = _create_strands_agent()
 
 
-def _invoke_agentcore(message: str) -> str:
+def _invoke_agentcore(message: str, auth_token: str = "") -> str:
     """Invoke the procurement agent via AgentCore Runtime endpoint."""
     import json
+    import urllib.request
     agent_id = os.environ.get("PROCUREMENT_AGENT_ID", os.environ.get("AGENTCORE_AGENT_ID", ""))
     if not agent_id:
         raise RuntimeError(
@@ -526,9 +540,42 @@ def _invoke_agentcore(message: str) -> str:
             account = boto3.client("sts").get_caller_identity()["Account"]
         agent_arn = f"arn:aws:bedrock-agentcore:{region}:{account}:runtime/{agent_id}"
 
-    client = boto3.client("bedrock-agentcore", region_name=region)
-    logger.info("agentcore_invoke", agent_arn=agent_arn)
+    import re as _re
+    if not _re.match(r"^[a-z]{2}(-[a-z]+-\d+)?$", region):
+        raise ValueError(f"Invalid AWS region format: {region}")
 
+    logger.info("agentcore_invoke", agent_arn=agent_arn, has_token=bool(auth_token))
+
+    # AgentCore Runtime is configured with JWT auth (Cognito) — use HTTP with Bearer token
+    if auth_token:
+        import urllib.parse
+        escaped_arn = urllib.parse.quote(agent_arn, safe="")
+        url = f"https://bedrock-agentcore.{region}.amazonaws.com/runtimes/{escaped_arn}/invocations"
+        body = json.dumps({"prompt": message}).encode()
+        bearer = auth_token if auth_token.startswith("Bearer ") else f"Bearer {auth_token}"
+        session_id = f"web-session-{uuid.uuid4().hex}"
+        req = urllib.request.Request(url, data=body, method="POST", headers={
+            "Content-Type": "application/json",
+            "Accept": "text/event-stream, application/json",
+            "Authorization": bearer,
+            "X-Amzn-Bedrock-AgentCore-Runtime-Session-Id": session_id,
+        })
+        if not url.startswith("https://"):
+            raise ValueError(f"Refusing non-HTTPS URL: {url}")
+        with urllib.request.urlopen(req, timeout=25) as http_resp:  # nosec B310 — AWS endpoint, 25s to stay under APIGW 29s limit
+            raw = http_resp.read().decode("utf-8")
+        try:
+            parsed = json.loads(raw)
+            if isinstance(parsed, str):
+                return parsed
+            if isinstance(parsed, dict):
+                return parsed.get("response", parsed.get("output", raw))
+            return raw
+        except (json.JSONDecodeError, TypeError):
+            return raw
+
+    # Fallback: try boto3 SigV4 (works if agent allows IAM auth)
+    client = boto3.client("bedrock-agentcore", region_name=region)
     resp = client.invoke_agent_runtime(
         agentRuntimeArn=agent_arn,
         payload=json.dumps({"prompt": message}),
@@ -566,6 +613,7 @@ def invoke_agent(
     message: str,
     session_id: Optional[str] = None,
     actor_id: Optional[str] = None,
+    auth_token: str = "",
 ) -> str:
     """Invoke the procurement agent with a user message.
 
@@ -579,7 +627,7 @@ def invoke_agent(
     if mode == "agentcore":
         try:
             logger.info("agentcore_invoking", message_len=len(message))
-            result = _invoke_agentcore(message)
+            result = _invoke_agentcore(message, auth_token=auth_token)
             logger.info("agentcore_invocation_complete", response_len=len(result))
             return result
         except Exception as e:
@@ -593,7 +641,7 @@ def invoke_agent(
             logger.info("strands_invoking", message_len=len(message))
             with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
                 future = executor.submit(lambda: str(_strands_agent(message)))
-                result = future.result(timeout=15)
+                result = future.result(timeout=25)
             logger.info("strands_invocation_complete", response_len=len(result))
             return result
         except concurrent.futures.TimeoutError:

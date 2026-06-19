@@ -2,8 +2,8 @@
 
 **Target: 7-10 minutes recorded demo**
 **URLs:**
-- Frontend: https://d3f3da4hp0y229.cloudfront.net
-- Login: demo@voltcycle.com / VoltCycle2026!
+- Frontend: (CloudFront URL from `cdk deploy` output)
+- Login: demo@voltcycle.com / (password set during `deploy-all.sh`)
 
 ---
 

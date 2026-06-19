@@ -137,6 +137,7 @@ api_stack = ApiStack(
     gateway_id=gateway_stack.gateway.get_att("GatewayIdentifier").to_string(),
     memory_id=memory_stack.memory.get_att("MemoryId").to_string(),
     policy_engine_id=policy_stack.policy_engine.get_att("PolicyEngineId").to_string(),
+    frontend_url=os.environ.get("FRONTEND_URL", ""),
     env=env, description="Flask API on Lambda with VPC/Neptune/Bedrock"
 )
 

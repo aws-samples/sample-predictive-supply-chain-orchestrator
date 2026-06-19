@@ -20,7 +20,8 @@ def chat():
             session_id = request.headers.get("X-Session-Id", data.get("session_id"))
             raw_user = request.headers.get("X-User-Id", data.get("user_id", "demo-user"))
             actor_id = raw_user.replace("@", "-at-").replace(".", "-")
-            response_text = state.invoke_agent(message, session_id=session_id, actor_id=actor_id)
+            auth_token = request.headers.get("X-Access-Token", "") or request.headers.get("Authorization", "")
+            response_text = state.invoke_agent(message, session_id=session_id, actor_id=actor_id, auth_token=auth_token)
             agent_mode = os.environ.get("AGENT_MODE", "local")
             source = "agentcore" if agent_mode == "agentcore" else "strands-agent"
         else:

@@ -8,12 +8,13 @@ import requests
 import json
 import sys
 
-# Configuration from CDK outputs
-NEPTUNE_ENDPOINT = "neptunedbcluster-knun8wigfffs.cluster-crsipo8ynrlb.us-east-1.neptune.amazonaws.com"
-NEPTUNE_PORT = 8182
-S3_BUCKET = "procurement-optimization--procurementdatabucket28d-ljhgkqlxtog0"
-S3_PREFIX = "neptune-load"
-IAM_ROLE_ARN = "arn:aws:iam::REDACTED_ACCOUNT_ID:role/procurement-optimization--NeptuneS3AccessRole22331D-bqNlGjwEw209"
+# Configuration from CDK outputs — set via environment variables
+import os
+NEPTUNE_ENDPOINT = os.environ.get("NEPTUNE_ENDPOINT", "")
+NEPTUNE_PORT = int(os.environ.get("NEPTUNE_PORT", "8182"))
+S3_BUCKET = os.environ.get("DATA_BUCKET", "")
+S3_PREFIX = os.environ.get("NEPTUNE_S3_PREFIX", "neptune-load")
+IAM_ROLE_ARN = os.environ.get("NEPTUNE_S3_ROLE_ARN", "")
 
 def start_bulk_load():
     """Start Neptune bulk loader job."""
