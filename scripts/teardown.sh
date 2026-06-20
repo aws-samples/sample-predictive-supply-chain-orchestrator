@@ -266,7 +266,21 @@ for eni in enis:
 fi
 
 echo ""
-echo "Step 6: Verify cleanup..."
+echo "Step 6: Delete ECR repositories created by the AgentCore toolkit..."
+# The bedrock-agentcore starter toolkit builds and pushes agent container
+# images to ECR repos named bedrock-agentcore-*. These are not CDK-managed,
+# so they (and their stored images) outlive `cdk destroy` and incur storage
+# cost. Force-delete them here.
+for repo in $(aws ecr describe-repositories --region $AWS_REGION \
+    --query "repositories[?starts_with(repositoryName, 'bedrock-agentcore')].repositoryName" \
+    --output text 2>/dev/null); do
+  echo "  Deleting ECR repo: $repo"
+  aws ecr delete-repository --repository-name "$repo" --force --region $AWS_REGION 2>/dev/null \
+    && echo "    deleted" || echo "    (already gone)"
+done
+
+echo ""
+echo "Step 7: Verify cleanup..."
 REMAINING=$(python3 -c "
 import boto3
 cf = boto3.client('cloudformation', region_name='$AWS_REGION')

@@ -16,6 +16,38 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../.
 from data.neptune_client import NeptuneClient
 
 
+def _gv(value):
+    """Wrap a Python value as the GraphSON typed value the parser expects."""
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, int):
+        return {"@type": "g:Int64", "@value": value}
+    if isinstance(value, float):
+        return {"@type": "g:Double", "@value": value}
+    return value
+
+
+def _vertex_map(props):
+    """Build a GraphSON g:Map mirroring Neptune's elementMap() output.
+
+    elementMap() emits a flat [key, value, key, value, ...] list where the
+    id key is a g:T token. The NeptuneClient parser resolves g:T -> "id".
+    """
+    flat = []
+    for key, value in props.items():
+        if key == "id":
+            flat.append({"@type": "g:T", "@value": "id"})
+        else:
+            flat.append(key)
+        flat.append(_gv(value))
+    return {"@type": "g:Map", "@value": flat}
+
+
+def _graphson_list(items):
+    """Wrap vertex/map entries in a GraphSON g:List (Neptune result.data)."""
+    return {"@type": "g:List", "@value": items}
+
+
 class TestNeptuneClient:
     """Test suite for NeptuneClient class."""
     
@@ -71,35 +103,33 @@ class TestNeptuneClient:
         assert result1 == result2
         mock_gremlin_client.assert_called_once()  # Only called once
     
-    @patch("data.neptune_client.gremlin_client.Client")
-    def test_find_alternative_suppliers_success(self, mock_gremlin_client):
+    @patch.object(NeptuneClient, "_http_query")
+    def test_find_alternative_suppliers_success(self, mock_http_query):
         """Test finding alternative suppliers."""
-        # Setup mock
-        mock_client_instance = Mock()
-        mock_gremlin_client.return_value = mock_client_instance
-        
-        mock_result = Mock()
-        mock_result.all.return_value.result.return_value = [
-            {
-                "supplier_id": "SUP-002",
+        # Neptune HTTP elementMap() returns a GraphSON g:List of g:Map vertices.
+        mock_http_query.return_value = _graphson_list([
+            _vertex_map({
+                "id": "SUP-002",
                 "name": "Alternative Supplier",
+                "location": "Shanghai, China",
                 "rating": 4.5,
-                "distance": 1
-            }
-        ]
-        mock_client_instance.submit.return_value = mock_result
-        
+                "geopolitical_risk_score": 0.3,
+            })
+        ])
+
         # Test
         client = NeptuneClient(
             endpoint="test-cluster.us-east-1.neptune.amazonaws.com"
         )
-        
+
         results = client.find_alternative_suppliers("MAT-001", max_hops=2)
-        
+
         # Verify
         assert len(results) == 1
         assert results[0]["supplier_id"] == "SUP-002"
-        mock_client_instance.submit.assert_called_once()
+        assert results[0]["name"] == "Alternative Supplier"
+        assert results[0]["rating"] == 4.5
+        mock_http_query.assert_called_once()
     
     @patch("data.neptune_client.gremlin_client.Client")
     def test_find_alternative_suppliers_empty_material_id(self, mock_gremlin_client):
@@ -121,47 +151,47 @@ class TestNeptuneClient:
         with pytest.raises(ValueError, match="max_hops must be between 1 and 3"):
             client.find_alternative_suppliers("MAT-001", max_hops=5)
     
-    @patch("data.neptune_client.gremlin_client.Client")
-    def test_find_alternative_suppliers_gremlin_error(self, mock_gremlin_client):
-        """Test handling of Gremlin server errors."""
-        mock_client_instance = Mock()
-        mock_gremlin_client.return_value = mock_client_instance
-        
-        mock_client_instance.submit.side_effect = GremlinServerError(
-            {"code": 500, "message": "Query error", "attributes": {}}
-        )
-        
+    @patch.object(NeptuneClient, "_http_query")
+    def test_find_alternative_suppliers_http_error(self, mock_http_query):
+        """Test that HTTP query failures propagate out of the method."""
+        # The HTTP-based implementation re-raises whatever _http_query raises.
+        mock_http_query.side_effect = ConnectionError("Neptune unreachable")
+
         client = NeptuneClient(
             endpoint="test-cluster.us-east-1.neptune.amazonaws.com"
         )
-        
-        with pytest.raises(GremlinServerError):
+
+        with pytest.raises(ConnectionError, match="Neptune unreachable"):
             client.find_alternative_suppliers("MAT-001")
     
-    @patch("data.neptune_client.gremlin_client.Client")
-    def test_get_supplier_network_success(self, mock_gremlin_client):
+    @patch.object(NeptuneClient, "_http_query")
+    def test_get_supplier_network_success(self, mock_http_query):
         """Test getting supplier network."""
-        mock_client_instance = Mock()
-        mock_gremlin_client.return_value = mock_client_instance
-        
-        mock_result = Mock()
-        mock_result.all.return_value.result.return_value = [
+        # get_supplier_network runs a project('material','edge') traversal;
+        # each result row is a g:Map with the projected keys.
+        mock_http_query.return_value = _graphson_list([
             {
-                "supplier": {"id": "SUP-001", "name": "Test Supplier"},
-                "material": {"id": "MAT-001", "name": "Test Material"}
+                "@type": "g:Map",
+                "@value": [
+                    "material",
+                    _vertex_map({"id": "MAT-001", "name": "Test Material"}),
+                    "edge",
+                    _vertex_map({"base_price": 10.0, "lead_time_days": 5}),
+                ],
             }
-        ]
-        mock_client_instance.submit.return_value = mock_result
-        
+        ])
+
         client = NeptuneClient(
             endpoint="test-cluster.us-east-1.neptune.amazonaws.com"
         )
-        
+
         result = client.get_supplier_network("SUP-001")
-        
-        assert "supplier_id" in result
+
+        assert result["supplier_id"] == "SUP-001"
         assert "relationships" in result
         assert len(result["relationships"]) == 1
+        assert result["relationships"][0]["material"]["id"] == "MAT-001"
+        mock_http_query.assert_called_once()
     
     @patch("data.neptune_client.gremlin_client.Client")
     def test_get_supplier_network_empty_supplier_id(self, mock_gremlin_client):
@@ -216,27 +246,33 @@ class TestNeptuneClient:
         
         assert concentration == {}
     
-    @patch("data.neptune_client.gremlin_client.Client")
-    def test_find_risk_correlated_suppliers_success(self, mock_gremlin_client):
-        """Test finding risk-correlated suppliers."""
-        mock_client_instance = Mock()
-        mock_gremlin_client.return_value = mock_client_instance
-        
-        mock_result = Mock()
-        mock_result.all.return_value.result.return_value = [
-            "SUP-002",
-            "SUP-003"
-        ]
-        mock_client_instance.submit.return_value = mock_result
-        
+    @patch.object(NeptuneClient, "_http_query")
+    def test_find_risk_correlated_suppliers_success(self, mock_http_query):
+        """Test finding risk-correlated suppliers.
+
+        find_risk_correlated_suppliers calls get_suppliers() (one _http_query
+        returning all suppliers) then filters in Python by shared location words.
+        SUP-002 and SUP-003 share the "China" region word with SUP-001; SUP-004
+        is in the USA and must be excluded.
+        """
+        mock_http_query.return_value = _graphson_list([
+            _vertex_map({"id": "SUP-001", "name": "Ref", "location": "Shanghai, China"}),
+            _vertex_map({"id": "SUP-002", "name": "Alt A", "location": "Shenzhen, China"}),
+            _vertex_map({"id": "SUP-003", "name": "Alt B", "location": "Beijing, China"}),
+            _vertex_map({"id": "SUP-004", "name": "Other", "location": "Austin, USA"}),
+        ])
+
         client = NeptuneClient(
             endpoint="test-cluster.us-east-1.neptune.amazonaws.com"
         )
-        
+
         results = client.find_risk_correlated_suppliers("SUP-001")
-        
+
         assert len(results) == 2
         assert "SUP-002" in results
+        assert "SUP-003" in results
+        assert "SUP-004" not in results
+        assert "SUP-001" not in results
     
     @patch("data.neptune_client.gremlin_client.Client")
     def test_find_risk_correlated_suppliers_empty_supplier_id(self, mock_gremlin_client):

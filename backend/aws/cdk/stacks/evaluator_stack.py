@@ -53,7 +53,7 @@ class EvaluatorStack(Stack):
                             "Tool call to evaluate: {tool_turn}\n\n"
                             "Check the following criteria:\n"
                             "1. Were the correct materials and quantities passed to the optimization tool?\n"
-                            "2. Did the tool return valid Pareto frontier solutions (Budget, Balanced, Premium, Resilient)?\n"
+                            "2. Did the tool return valid Pareto frontier solutions (Cost-Optimized, Balanced, Risk-Diversified)?\n"
                             "3. Are the cost values positive and realistic for e-bike manufacturing?\n"
                             "4. Were constraints (supplier concentration, lead time, budget) respected?\n"
                             "5. Do allocations sum to the requested quantities?\n\n"

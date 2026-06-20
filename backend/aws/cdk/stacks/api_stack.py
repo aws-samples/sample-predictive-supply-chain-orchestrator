@@ -117,46 +117,91 @@ class ApiStack(Stack):
             )
         )
 
-        # Grant AgentCore control + data plane access (for admin Operations panel)
+        # Grant AgentCore control + data plane access (for admin Operations
+        # panel). Per-resource Get/data actions are scoped to the gateway,
+        # memory, and policy-engine resources owned by this deployment.
+        agentcore_arn_prefix = (
+            f"arn:aws:bedrock-agentcore:{self.region}:{self.account}:"
+        )
         api_role.add_to_policy(
             iam.PolicyStatement(
                 effect=iam.Effect.ALLOW,
                 actions=[
                     "bedrock-agentcore:GetGateway",
-                    "bedrock-agentcore:ListGateways",
                     "bedrock-agentcore:ListGatewayTargets",
                     "bedrock-agentcore:GetGatewayTarget",
                     "bedrock-agentcore:GetMemory",
-                    "bedrock-agentcore:ListMemories",
                     "bedrock-agentcore:ListMemoryRecords",
                     "bedrock-agentcore:RetrieveMemoryRecords",
                     "bedrock-agentcore:GetPolicyEngine",
                     "bedrock-agentcore:ListPolicies",
                     "bedrock-agentcore:GetPolicy",
-                    "bedrock-agentcore:ListPolicyEngines",
-                    "bedrock-agentcore:ListEvaluators",
-                    "bedrock-agentcore:GetEvaluator",
                     "bedrock-agentcore:CreateEvent",
                     "bedrock-agentcore:ListEvents",
                     "bedrock-agentcore:GetEvent",
                     "bedrock-agentcore:ListSessions",
+                ],
+                resources=[
+                    f"{agentcore_arn_prefix}gateway/{gateway_id}",
+                    f"{agentcore_arn_prefix}gateway/{gateway_id}/*",
+                    f"{agentcore_arn_prefix}memory/{memory_id}",
+                    f"{agentcore_arn_prefix}memory/{memory_id}/*",
+                    f"{agentcore_arn_prefix}policy-engine/{policy_engine_id}",
+                    f"{agentcore_arn_prefix}policy-engine/{policy_engine_id}/*",
+                ],
+            )
+        )
+
+        # List/discovery and runtime-invoke actions that the AgentCore API
+        # only authorizes on "*" (they enumerate resources or target a
+        # runtime whose ARN is not known at synth time).
+        api_role.add_to_policy(
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=[
+                    "bedrock-agentcore:ListGateways",
+                    "bedrock-agentcore:ListMemories",
+                    "bedrock-agentcore:ListPolicyEngines",
+                    "bedrock-agentcore:ListEvaluators",
+                    "bedrock-agentcore:GetEvaluator",
                     "bedrock-agentcore:InvokeAgentRuntime",
                 ],
                 resources=["*"],
             )
         )
 
-        # Grant CloudWatch Logs read access (for eval traces in Operations panel)
+        # Grant CloudWatch Logs read access (for eval traces in Operations
+        # panel). DescribeLogGroups must run against "*" (the API does not
+        # accept a resource for it); the per-log-group read actions are scoped
+        # to the Bedrock AgentCore and Lambda log-group hierarchies.
+        scoped_log_groups = [
+            f"arn:aws:logs:{self.region}:{self.account}:"
+            "log-group:/aws/bedrock-agentcore/*",
+            f"arn:aws:logs:{self.region}:{self.account}:"
+            "log-group:/aws/lambda/*",
+            f"arn:aws:logs:{self.region}:{self.account}:"
+            "log-group:/aws/bedrock-agentcore/*:log-stream:*",
+            f"arn:aws:logs:{self.region}:{self.account}:"
+            "log-group:/aws/lambda/*:log-stream:*",
+        ]
         api_role.add_to_policy(
             iam.PolicyStatement(
                 effect=iam.Effect.ALLOW,
                 actions=[
                     "logs:FilterLogEvents",
                     "logs:GetLogEvents",
-                    "logs:DescribeLogGroups",
                     "logs:DescribeLogStreams",
                 ],
-                resources=["*"],
+                resources=scoped_log_groups,
+            )
+        )
+        api_role.add_to_policy(
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=["logs:DescribeLogGroups"],
+                resources=[
+                    f"arn:aws:logs:{self.region}:{self.account}:log-group:*"
+                ],
             )
         )
 
@@ -306,26 +351,215 @@ class ApiStack(Stack):
         NagSuppressions.add_resource_suppressions(
             api_role,
             [
-                {"id": "AwsSolutions-IAM5", "reason": "Bedrock/Neptune need wildcard for model/cluster IDs"},
-                {"id": "AwsSolutions-IAM4", "reason": "VPC execution role is AWS managed"},
+                {
+                    "id": "AwsSolutions-IAM4",
+                    "appliesTo": [
+                        "Policy::arn:<AWS::Partition>:iam::aws:policy/"
+                        "service-role/AWSLambdaVPCAccessExecutionRole",
+                    ],
+                    "reason": (
+                        "AWS-managed VPC access execution role is required for "
+                        "a Lambda placed in a VPC to manage its ENIs; an "
+                        "equivalent customer-managed policy adds maintenance "
+                        "burden without security benefit for a sample."
+                    ),
+                },
+                {
+                    "id": "AwsSolutions-IAM5",
+                    "appliesTo": [
+                        # Bedrock foundation models / inference profiles are
+                        # not known at synth time and are addressed by family.
+                        "Resource::arn:aws:bedrock:*::foundation-model/*",
+                        {
+                            "regex": "/^Resource::arn:aws:bedrock:.*:"
+                            "inference-profile/\\*$/g"
+                        },
+                        # S3 grant_read_write expands to scoped sub-actions on
+                        # the data bucket only.
+                        "Action::s3:GetBucket*",
+                        "Action::s3:GetObject*",
+                        "Action::s3:List*",
+                        "Action::s3:Abort*",
+                        "Action::s3:DeleteObject*",
+                        "Resource::<ProcurementDataBucket28D81D70.Arn>/*",
+                        # Neptune scoped to this cluster's IAM-auth resource id.
+                        {"regex": "/^Resource::arn:aws:neptune-db:.*$/g"},
+                        # AgentCore per-resource Get actions scoped to this
+                        # deployment's gateway/memory/policy-engine ARNs (which
+                        # carry a trailing /* for sub-resources).
+                        {
+                            "regex": "/^Resource::arn:aws:bedrock-agentcore:.*:"
+                            "(gateway|memory|policy-engine)/.*$/g"
+                        },
+                        # AgentCore list/discovery and runtime-invoke only
+                        # authorize on "*".
+                        "Resource::*",
+                        # Per-log-group reads scoped to the AgentCore/Lambda
+                        # log-group hierarchies; DescribeLogGroups uses "*".
+                        {"regex": "/^Resource::arn:aws:logs:.*:log-group:.*$/g"},
+                    ],
+                    "reason": (
+                        "Bedrock InvokeModel targets foundation models and "
+                        "inference profiles whose IDs are not known at synth "
+                        "time; S3 wildcards are sub-actions of grant_read_write "
+                        "scoped to the data bucket; the Neptune statement is "
+                        "scoped to this cluster's IAM-auth resource id; the "
+                        "AgentCore per-resource Get actions are scoped to this "
+                        "deployment's gateway/memory/policy-engine ARNs; "
+                        "AgentCore List* / InvokeAgentRuntime and "
+                        "logs:DescribeLogGroups only authorize on '*' per their "
+                        "IAM action definitions, and the per-log-group read "
+                        "actions are scoped to the /aws/bedrock-agentcore and "
+                        "/aws/lambda log-group hierarchies."
+                    ),
+                },
             ],
             apply_to_children=True,
         )
         NagSuppressions.add_resource_suppressions(
             api,
             [
-                {"id": "AwsSolutions-APIG2", "reason": "Request validation not needed for demo"},
-                {"id": "AwsSolutions-APIG1", "reason": "Access logging at stage level"},
-                {"id": "AwsSolutions-APIG4", "reason": "Cognito authorizer on all routes except /health"},
-                {"id": "AwsSolutions-APIG3", "reason": "WAFv2 not required for internal demo API"},
-                {"id": "AwsSolutions-APIG6", "reason": "Stage-level logging configured separately"},
+                {
+                    "id": "AwsSolutions-APIG2",
+                    "reason": (
+                        "The backend is a single Lambda proxy that performs "
+                        "its own Pydantic request validation; API Gateway "
+                        "request validation would duplicate that logic."
+                    ),
+                },
+                {
+                    "id": "AwsSolutions-APIG3",
+                    "reason": (
+                        "A WAFv2 web ACL is left to the deploying account's "
+                        "Firewall Manager / org policy rather than hard-coded "
+                        "in this stack; CloudFront in front of the UI and the "
+                        "Cognito authorizer provide the request controls."
+                    ),
+                },
             ],
             apply_to_children=True,
         )
+        # Stage-level logging (access logs + execution logging) is left to the
+        # deploying account's centralized API Gateway logging configuration to
+        # avoid hard-coding a log destination + CloudWatch role in this stack.
+        NagSuppressions.add_resource_suppressions_by_path(
+            self,
+            "/" + self.stack_name
+            + "/ProcurementApi/DeploymentStage.prod/Resource",
+            [
+                {
+                    "id": "AwsSolutions-APIG1",
+                    "reason": (
+                        "Access logging is left to the deploying account's "
+                        "centralized API Gateway logging configuration rather "
+                        "than hard-coding a log-group destination in this "
+                        "stack."
+                    ),
+                },
+                {
+                    "id": "AwsSolutions-APIG6",
+                    "reason": (
+                        "Method-level CloudWatch execution logging is left to "
+                        "the deploying account's centralized API Gateway "
+                        "logging configuration (which requires an "
+                        "account-level CloudWatch role) rather than being "
+                        "hard-coded in this stack."
+                    ),
+                },
+            ],
+        )
+        # /health GET is intentionally unauthenticated (uptime probes) and CORS
+        # preflight OPTIONS requests are sent without credentials, so neither
+        # the generic authorization rule (APIG4) nor the Cognito authorizer
+        # rule (COG4) can apply to them. All other routes use Cognito.
+        unauth_methods = {
+            "/health/GET/Resource": (
+                "The /health GET endpoint is intentionally unauthenticated for "
+                "load-balancer/uptime probes; all other routes use the "
+                "Cognito authorizer."
+            ),
+            "/OPTIONS/Resource": (
+                "CORS preflight OPTIONS requests are sent by the browser "
+                "without credentials and must remain unauthenticated; all "
+                "non-OPTIONS routes (except /health) use the Cognito "
+                "authorizer."
+            ),
+            "/health/OPTIONS/Resource": (
+                "CORS preflight OPTIONS requests are sent by the browser "
+                "without credentials and must remain unauthenticated; all "
+                "non-OPTIONS routes (except /health) use the Cognito "
+                "authorizer."
+            ),
+            "/{proxy+}/OPTIONS/Resource": (
+                "CORS preflight OPTIONS requests are sent by the browser "
+                "without credentials and must remain unauthenticated; all "
+                "non-OPTIONS routes (except /health) use the Cognito "
+                "authorizer."
+            ),
+        }
+        for method_path, reason in unauth_methods.items():
+            NagSuppressions.add_resource_suppressions_by_path(
+                self,
+                "/" + self.stack_name + "/ProcurementApi/Default"
+                + method_path,
+                [
+                    {"id": "AwsSolutions-APIG4", "reason": reason},
+                    {"id": "AwsSolutions-COG4", "reason": reason},
+                ],
+            )
         NagSuppressions.add_resource_suppressions(
             api_function,
             [
-                {"id": "AwsSolutions-L1", "reason": "Python 3.11 is stable; 3.12+ not yet validated with all deps"},
+                {
+                    "id": "AwsSolutions-L1",
+                    "reason": (
+                        "Runtime pinned to Python 3.11 to match the shared "
+                        "Lambda layer's scipy/numpy native wheels (compiled "
+                        "for 3.11); a newer runtime requires rebuilding those "
+                        "native dependencies."
+                    ),
+                },
             ],
             apply_to_children=True,
+        )
+        # LogRetention is a CDK-managed custom resource (AWS-managed
+        # basic-execution policy + logs wildcard) not user-configurable.
+        NagSuppressions.add_resource_suppressions_by_path(
+            self,
+            "/" + self.stack_name
+            + "/LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8a/ServiceRole/"
+            "Resource",
+            [
+                {
+                    "id": "AwsSolutions-IAM4",
+                    "appliesTo": [
+                        "Policy::arn:<AWS::Partition>:iam::aws:policy/"
+                        "service-role/AWSLambdaBasicExecutionRole",
+                    ],
+                    "reason": (
+                        "AWS-managed basic-execution role is required by the "
+                        "CDK LogRetention custom-resource Lambda; not "
+                        "user-configurable."
+                    ),
+                }
+            ],
+        )
+        NagSuppressions.add_resource_suppressions_by_path(
+            self,
+            "/" + self.stack_name
+            + "/LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8a/ServiceRole/"
+            "DefaultPolicy/Resource",
+            [
+                {
+                    "id": "AwsSolutions-IAM5",
+                    "appliesTo": ["Resource::*"],
+                    "reason": (
+                        "The CDK LogRetention custom resource must call "
+                        "logs:PutRetentionPolicy/DeleteRetentionPolicy across "
+                        "log groups whose names are not known at synth time; "
+                        "the wildcard resource is created and managed by the "
+                        "construct and is not user-configurable."
+                    ),
+                }
+            ],
         )

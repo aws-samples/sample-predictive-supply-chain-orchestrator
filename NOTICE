@@ -1,0 +1,36 @@
+Predictive Supply Chain Orchestrator
+Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+
+This sample is licensed under the MIT-0 License. See the LICENSE file.
+
+This project depends on the following third-party open-source software,
+each distributed under its own license:
+
+Python (backend / agents):
+  Flask                 BSD-3-Clause
+  flask-cors            MIT
+  apig-wsgi             MIT
+  boto3 / botocore      Apache-2.0
+  scipy                 BSD-3-Clause
+  numpy                 BSD-3-Clause
+  pandas                BSD-3-Clause
+  gremlinpython         Apache-2.0
+  pydantic              MIT
+  structlog             MIT / Apache-2.0
+  python-dotenv         BSD-3-Clause
+  strands-agents        Apache-2.0
+  bedrock-agentcore     Apache-2.0
+  aws-cdk-lib           Apache-2.0
+  cdk-nag               Apache-2.0
+
+JavaScript / TypeScript (frontend):
+  react / react-dom     MIT
+  vite                  MIT
+  recharts              MIT
+  leaflet               BSD-2-Clause
+  dompurify             Apache-2.0 OR MPL-2.0
+  amazon-cognito-identity-js   Apache-2.0
+  jspdf                 MIT
+
+Dependencies are declared in the various requirements.txt and package.json
+files and are not redistributed in this repository.

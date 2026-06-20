@@ -248,14 +248,17 @@ if [ -n "$POOL_ID_FOR_USER" ]; then
   fi
 
   if [ -n "$POOL_ID_FOR_USER" ]; then
-    # Create users with permanent passwords (no forced change on first login)
+    # Create users with permanent passwords (no forced change on first login).
+    # The temporary password is random per-run and immediately overwritten by
+    # the permanent DEMO_PASSWORD below — never hardcode a credential literal.
     for pair in "demo@voltcycle.com Admin" "analyst@voltcycle.com Analyst" "manager@voltcycle.com ProcurementManager"; do
       EMAIL=$(echo "$pair" | awk '{print $1}')
       ROLE=$(echo "$pair" | awk '{print $2}')
+      TEMP_PW="Tmp-$(openssl rand -base64 18 | tr -dc 'A-Za-z0-9')-9!"
       aws cognito-idp admin-create-user \
         --user-pool-id "$POOL_ID_FOR_USER" \
         --username "$EMAIL" \
-        --temporary-password TempPass123! \
+        --temporary-password "$TEMP_PW" \
         --user-attributes Name=email,Value="$EMAIL" Name=email_verified,Value=true \
         --message-action SUPPRESS 2>/dev/null || true
       aws cognito-idp admin-set-user-password \

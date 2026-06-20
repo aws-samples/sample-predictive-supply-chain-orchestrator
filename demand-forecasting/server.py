@@ -2,6 +2,13 @@
 """
 Unified server for E-bike Demand Forecasting System
 Serves both the data viewer and the AI agent API
+
+================================================================================
+LOCAL DEVELOPMENT SERVER ONLY — NOT FOR PRODUCTION.
+  - No authentication. Binds to localhost (127.0.0.1) only.
+  - CORS origin is restricted via the FORECAST_CORS_ORIGIN env var.
+  - Do not expose this server to a public network.
+================================================================================
 """
 
 import http.server
@@ -9,9 +16,16 @@ import socketserver
 import json
 import os
 import sys
+import logging
 import numpy as np
 from urllib.parse import urlparse, parse_qs
 from pathlib import Path
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# CORS allowlist for local dev — single origin, overridable via env.
+ALLOWED_ORIGIN = os.environ.get("FORECAST_CORS_ORIGIN", "http://localhost:5173")
 
 # Add agent directory to path
 agent_dir = Path(__file__).parent / 'agents'
@@ -52,7 +66,8 @@ class UnifiedHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 response_text = str(agent_result)
                 self.send_json_response({"response": response_text, "status": "success"})
             except Exception as e:
-                self.send_json_response({"error": str(e), "status": "error"}, 500)
+                logger.error("materials endpoint error: %s", e)
+                self.send_json_response({"error": "Internal error", "status": "error"}, 500)
         
         elif parsed_path.path.startswith('/api/seasonal-analysis/'):
             material_id = parsed_path.path.split('/')[-1]
@@ -65,8 +80,9 @@ class UnifiedHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                     "status": "success"
                 })
             except Exception as e:
-                self.send_json_response({"error": str(e), "status": "error"}, 500)
-        
+                logger.error("seasonal-analysis endpoint error: %s", e)
+                self.send_json_response({"error": "Internal error", "status": "error"}, 500)
+
         # Serve static files
         else:
             super().do_GET()
@@ -120,19 +136,20 @@ class UnifiedHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 })
                 
             except Exception as e:
-                error_msg = str(e)
-                print(f"\n{'='*60}")
-                print(f"❌ Error: {error_msg}")
-                print(f"{'='*60}\n")
-                
-                # Check for specific error types
-                if "max_tokens" in error_msg.lower():
-                    error_msg = "Agent response too long. Try asking a more specific question or request a summary."
-                elif "rate limit" in error_msg.lower():
-                    error_msg = "API rate limit reached. Please wait a moment and try again."
-                
+                detail = str(e)
+                logger.error("query endpoint error: %s", detail)
+
+                # Map known error types to safe, user-friendly client messages.
+                # Default to a generic message — never leak raw exception detail.
+                if "max_tokens" in detail.lower():
+                    client_msg = "Agent response too long. Try asking a more specific question or request a summary."
+                elif "rate limit" in detail.lower():
+                    client_msg = "API rate limit reached. Please wait a moment and try again."
+                else:
+                    client_msg = "Internal error"
+
                 self.send_json_response({
-                    "error": error_msg,
+                    "error": client_msg,
                     "status": "error"
                 }, 500)
         else:
@@ -273,37 +290,38 @@ class UnifiedHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.send_json_response(result)
             
         except Exception as e:
-            print(f"❌ Forecast error: {str(e)}")
-            self.send_json_response({"error": str(e), "status": "error"}, 500)
+            logger.error("forecast endpoint error: %s", e)
+            self.send_json_response({"error": "Internal error", "status": "error"}, 500)
     
     def send_json_response(self, data, status_code=200):
         """Send JSON response with proper headers"""
         self.send_response(status_code)
         self.send_header('Content-Type', 'application/json')
-        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Origin', ALLOWED_ORIGIN)
         self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type')
         self.end_headers()
         self.wfile.write(json.dumps(data).encode('utf-8'))
-    
+
     def do_OPTIONS(self):
         """Handle CORS preflight requests"""
         self.send_response(200)
-        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Origin', ALLOWED_ORIGIN)
         self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type')
         self.end_headers()
-    
+
     def end_headers(self):
         """Add CORS headers to all responses"""
-        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Origin', ALLOWED_ORIGIN)
         self.send_header('Cache-Control', 'no-store, no-cache, must-revalidate')
         super().end_headers()
 
 def start_server():
     handler = UnifiedHTTPRequestHandler
     
-    with socketserver.TCPServer(("", PORT), handler) as httpd:
+    # Bind to localhost only — this is a local dev server with no auth.
+    with socketserver.TCPServer(("127.0.0.1", PORT), handler) as httpd:
         print("=" * 70)
         print("🚀 E-bike Demand Forecasting System - Unified Server")
         print("=" * 70)

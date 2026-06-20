@@ -127,11 +127,26 @@ class DataStack(Stack):
             self,
             "NeptuneInstance",
             db_instance_class="db.t3.medium",
-            db_cluster_identifier=self.neptune_cluster.ref
+            db_cluster_identifier=self.neptune_cluster.ref,
+            auto_minor_version_upgrade=True
         )
         
         neptune_instance.add_dependency(self.neptune_cluster)
         
+        # Dedicated bucket for S3 server access logs (kept self-contained
+        # in this stack). It is its own access-log target to avoid a
+        # recursive logging loop.
+        access_logs_bucket = s3.Bucket(
+            self,
+            "ProcurementAccessLogsBucket",
+            encryption=s3.BucketEncryption.S3_MANAGED,
+            block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
+            versioned=True,
+            removal_policy=RemovalPolicy.RETAIN,
+            enforce_ssl=True,
+            object_ownership=s3.ObjectOwnership.BUCKET_OWNER_PREFERRED
+        )
+
         # S3 bucket for data storage
         self.data_bucket = s3.Bucket(
             self,
@@ -140,7 +155,9 @@ class DataStack(Stack):
             block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
             versioned=True,
             removal_policy=RemovalPolicy.RETAIN,
-            enforce_ssl=True
+            enforce_ssl=True,
+            server_access_logs_bucket=access_logs_bucket,
+            server_access_logs_prefix="data-bucket-access-logs/"
         )
         
         # Upload CSV data files to S3 so the Neptune loader can find them
@@ -222,17 +239,150 @@ class DataStack(Stack):
             [
                 {
                     "id": "AwsSolutions-VPC7",
-                    "reason": "VPC Flow Logs not required for demo/PoC environment"
+                    "reason": (
+                        "Neptune and the Lambda tools run in private subnets "
+                        "with security-group isolation; VPC Flow Logs are not "
+                        "enabled to keep this reference stack self-contained "
+                        "and avoid a CloudWatch Logs cost with no consumer in "
+                        "this sample. Operators can enable flow logs by adding "
+                        "flow_logs to the Vpc construct."
+                    )
                 }
             ]
         )
-        
+
         NagSuppressions.add_resource_suppressions(
             self.neptune_sg,
             [
                 {
                     "id": "AwsSolutions-EC23",
-                    "reason": "Neptune security group allows VPC CIDR for legitimate database access"
+                    "reason": (
+                        "Ingress is restricted to the VPC CIDR (and the Lambda "
+                        "security group) on the Neptune port only. The rule "
+                        "references the VPC CidrBlock intrinsic which the nag "
+                        "rule cannot resolve at synth time."
+                    )
+                },
+                {
+                    "id": "CdkNagValidationFailure",
+                    "reason": (
+                        "AwsSolutions-EC23 cannot validate the ingress peer "
+                        "because it is the VPC CidrBlock intrinsic "
+                        "(Fn::GetAtt), not a literal CIDR. Ingress is scoped "
+                        "to the VPC CIDR on the Neptune port only."
+                    )
                 }
             ]
+        )
+
+        # The access-logs bucket is its own server-access-log target, which
+        # would create a recursive logging loop, so logging is intentionally
+        # not enabled on it.
+        NagSuppressions.add_resource_suppressions(
+            access_logs_bucket,
+            [
+                {
+                    "id": "AwsSolutions-S1",
+                    "reason": (
+                        "This bucket is the dedicated server-access-log "
+                        "destination for the data bucket; enabling access "
+                        "logging on it would create a self-referential "
+                        "logging loop."
+                    )
+                }
+            ]
+        )
+
+        # S3 grant_read on the Neptune bulk-loader role expands to scoped
+        # read sub-actions on this bucket only.
+        NagSuppressions.add_resource_suppressions(
+            neptune_s3_role,
+            [
+                {
+                    "id": "AwsSolutions-IAM5",
+                    "appliesTo": [
+                        "Action::s3:GetBucket*",
+                        "Action::s3:GetObject*",
+                        "Action::s3:List*",
+                        "Resource::<ProcurementDataBucket28D81D70.Arn>/*",
+                    ],
+                    "reason": (
+                        "Scoped S3 read to the procurement data bucket only; "
+                        "the wildcard actions are the GetObject/GetBucket/List "
+                        "sub-actions of the grant_read permission set the "
+                        "Neptune bulk loader needs to read CSV objects."
+                    )
+                }
+            ],
+            apply_to_children=True
+        )
+
+        # CDK BucketDeployment custom-resource internals: service role
+        # wildcards, the AWS-managed basic-execution policy, and the
+        # construct-managed Lambda runtime are not user-configurable. The two
+        # BucketDeployments share one singleton custom-resource handler.
+        bd_prefix = (
+            "/" + self.stack_name
+            + "/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C"
+        )
+        NagSuppressions.add_resource_suppressions_by_path(
+            self,
+            bd_prefix + "/ServiceRole/Resource",
+            [
+                {
+                    "id": "AwsSolutions-IAM4",
+                    "appliesTo": [
+                        "Policy::arn:<AWS::Partition>:iam::aws:policy/"
+                        "service-role/AWSLambdaBasicExecutionRole",
+                    ],
+                    "reason": (
+                        "AWS-managed basic-execution role is required by the "
+                        "CDK BucketDeployment custom-resource Lambda for "
+                        "CloudWatch logging; an equivalent customer-managed "
+                        "policy adds maintenance burden without security "
+                        "benefit for a sample."
+                    ),
+                }
+            ],
+        )
+        NagSuppressions.add_resource_suppressions_by_path(
+            self,
+            bd_prefix + "/ServiceRole/DefaultPolicy/Resource",
+            [
+                {
+                    "id": "AwsSolutions-IAM5",
+                    "appliesTo": [
+                        "Action::s3:GetBucket*",
+                        "Action::s3:GetObject*",
+                        "Action::s3:List*",
+                        "Action::s3:Abort*",
+                        "Action::s3:DeleteObject*",
+                        "Resource::<ProcurementDataBucket28D81D70.Arn>/*",
+                        "Resource::arn:aws:s3:::cdk-hnb659fds-assets-"
+                        + self.account
+                        + "-"
+                        + self.region
+                        + "/*",
+                    ],
+                    "reason": (
+                        "Scoped S3 read/write to the CDK asset bucket and the "
+                        "destination data bucket only; wildcard actions are "
+                        "sub-actions of the grant_read_write permission set "
+                        "used by the managed BucketDeployment construct."
+                    ),
+                }
+            ],
+        )
+        NagSuppressions.add_resource_suppressions_by_path(
+            self,
+            bd_prefix + "/Resource",
+            [
+                {
+                    "id": "AwsSolutions-L1",
+                    "reason": (
+                        "Runtime is managed by the CDK BucketDeployment "
+                        "construct and is not user-configurable."
+                    ),
+                }
+            ],
         )

@@ -50,7 +50,9 @@ class IdentityStack(Stack):
                 temp_password_validity=Duration.days(3)
             ),
             account_recovery=cognito.AccountRecovery.EMAIL_ONLY,
-            removal_policy=RemovalPolicy.DESTROY,  # For dev/demo
+            removal_policy=RemovalPolicy.DESTROY,
+            # Threat protection (compromised-credential + adaptive auth).
+            advanced_security_mode=cognito.AdvancedSecurityMode.ENFORCED,
             mfa=cognito.Mfa.OPTIONAL,
             mfa_second_factor=cognito.MfaSecondFactor(
                 sms=False,

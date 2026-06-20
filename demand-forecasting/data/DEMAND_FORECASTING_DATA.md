@@ -5,7 +5,7 @@ This document describes the sample datasets created for the Demand Forecasting A
 ## Generated Files (4 new datasets)
 
 ### 1. bike_sales_history.csv
-**Purpose:** Master sales transaction log (product-level)
+**Purpose:** Primary sales transaction log (product-level)
 
 **Records:** 1,782 transactions over 24 months (Jan 2024 - Dec 2025)
 

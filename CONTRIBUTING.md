@@ -1,59 +1,69 @@
-# Contributing Guidelines
+# Contributing
 
-Thank you for your interest in contributing to our project. Whether it's a bug report, new feature, correction, or additional
-documentation, we greatly value feedback and contributions from our community.
+## Reporting Security Issues
 
-Please read through this document before submitting any issues or pull requests to ensure we have all the necessary
-information to effectively respond to your bug report or contribution.
+If you discover a potential security issue in this project, please notify AWS/Amazon
+Security via our [vulnerability reporting page](https://aws.amazon.com/security/vulnerability-reporting/).
+Do **not** create a public GitHub issue for security findings.
 
+## Getting Started
 
-## Reporting Bugs/Feature Requests
+1. Clone the repository
+2. Set up the backend: `cd backend && pip install -r requirements.txt -r requirements-dev.txt`
+3. Set up the frontend: `cd procurement-agent-ui && npm install`
+4. Copy `backend/.env.example` to `backend/.env` and fill in your values
 
-We welcome you to use the GitHub issue tracker to report bugs or suggest features.
+## Development Workflow
 
-When filing an issue, please check existing open, or recently closed, issues to make sure somebody else hasn't already
-reported the issue. Please try to include as much information as you can. Details like these are incredibly useful:
+1. Create a feature branch: `git checkout -b feature/your-feature`
+2. Write tests first (TDD)
+3. Implement your changes
+4. Run the full test suite: `cd backend && make test`
+5. Run linting: `cd backend && make lint`
+6. Format code: `cd backend && make format`
+7. Commit with conventional commit messages: `feat: add supplier risk scoring`
 
-* A reproducible test case or series of steps
-* The version of our code being used
-* Any modifications you've made relevant to the bug
-* Anything unusual about your environment or deployment
+## Code Standards
 
+See [CLAUDE.md](./CLAUDE.md) for enforced conventions. Key rules:
 
-## Contributing via Pull Requests
-Contributions via pull requests are much appreciated. Before sending us a pull request, please ensure that:
+- No file over 500 lines
+- No bare `except Exception` — use specific exception types
+- No `sys.path.insert()` — use proper Python imports
+- Every new feature needs tests
+- Pin all dependency versions exactly
+- Never copy code to lambda_tools/ — use Lambda Layers
 
-1. You are working against the latest source on the *main* branch.
-2. You check existing open, and recently merged, pull requests to make sure someone else hasn't addressed the problem already.
-3. You open an issue to discuss any significant work - we would hate for your time to be wasted.
+## Commit Messages
 
-To send us a pull request, please:
+Use [Conventional Commits](https://www.conventionalcommits.org/):
 
-1. Fork the repository.
-2. Modify the source; please focus on the specific change you are contributing. If you also reformat all the code, it will be hard for us to focus on your change.
-3. Ensure local tests pass.
-4. Commit to your fork using clear commit messages.
-5. Send us a pull request, answering any default questions in the pull request interface.
-6. Pay attention to any automated CI failures reported in the pull request, and stay involved in the conversation.
+- `feat:` — new feature
+- `fix:` — bug fix
+- `refactor:` — code restructuring without behavior change
+- `test:` — adding or updating tests
+- `docs:` — documentation changes
+- `chore:` — build, CI, dependency updates
 
-GitHub provides additional document on [forking a repository](https://help.github.com/articles/fork-a-repo/) and
-[creating a pull request](https://help.github.com/articles/creating-a-pull-request/).
+## Testing
 
+```bash
+# Backend unit tests
+cd backend && pytest tests/ -m unit
 
-## Finding contributions to work on
-Looking at the existing issues is a great way to find something to contribute on. As our projects, by default, use the default GitHub issue labels (enhancement/bug/duplicate/help wanted/invalid/question/wontfix), looking at any 'help wanted' issues is a great place to start.
+# Backend integration tests
+cd backend && pytest tests/ -m integration
 
+# Frontend tests
+cd procurement-agent-ui && npx vitest
 
-## Code of Conduct
-This project has adopted the [Amazon Open Source Code of Conduct](https://aws.github.io/code-of-conduct).
-For more information see the [Code of Conduct FAQ](https://aws.github.io/code-of-conduct-faq) or contact
-opensource-codeofconduct@amazon.com with any additional questions or comments.
+# Full suite with coverage
+cd backend && make test
+```
 
+## Pull Requests
 
-## Security issue notifications
-If you discover a potential security issue in this project we ask that you notify AWS/Amazon Security via our [vulnerability reporting page](http://aws.amazon.com/security/vulnerability-reporting/). Please do **not** create a public github issue.
-
-
-## Licensing
-
-See the [LICENSE](LICENSE) file for our project's licensing. We will ask you to confirm the licensing of your contribution.
+- Keep PRs focused on a single concern
+- Include tests for new functionality
+- Update CHANGELOG.md under [Unreleased]
+- Ensure all checks pass before requesting review

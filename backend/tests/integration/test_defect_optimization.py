@@ -34,7 +34,7 @@ class TestDefectOptimizationIntegration:
             ),
         )
         solutions = engine.optimize(request)
-        assert len(solutions) == 4
+        assert len(solutions) == 3
 
         # All solutions should have valid risk scores
         for sol in solutions:
@@ -65,7 +65,7 @@ class TestDefectOptimizationIntegration:
         solutions = engine.optimize(request)
 
         names = {s.name for s in solutions}
-        assert names == {"Budget", "Balanced", "Premium", "Resilient"}
+        assert names == {"Cost-Optimized", "Balanced", "Risk-Diversified"}
 
         for sol in solutions:
             assert sol.total_cost > 0

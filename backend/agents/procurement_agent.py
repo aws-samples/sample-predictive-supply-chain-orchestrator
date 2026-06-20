@@ -25,9 +25,13 @@ from data.csv_reader import CSVDataReader
 
 logger = structlog.get_logger()
 
-# Initialize shared data reader and engine
-# Lambda: DATA_DIR=/var/task/data; Local dev: ../data (relative to backend/)
-_data_dir = os.environ.get("DATA_DIR", os.environ.get("DATA_PATH", str(Path(__file__).parent.parent / "data")))
+# Initialize shared data reader and engine.
+# Lambda sets DATA_DIR=/var/task/data; locally the CSVs live at the project
+# root data/ directory (two levels above backend/agents/).
+_data_dir = os.environ.get(
+    "DATA_DIR",
+    os.environ.get("DATA_PATH", str(Path(__file__).parent.parent.parent / "data")),
+)
 try:
     _data_reader = CSVDataReader(data_dir=_data_dir)
     _engine = OptimizationEngine(_data_reader)
@@ -141,7 +145,9 @@ def explain_solution(solution_name: str, total_cost: float, risk_score: float) -
     """Explain an optimization decision in business terms.
 
     Args:
-        solution_name: Name of the solution (Budget, Balanced, Premium, Resilient).
+        solution_name: Name of the solution. The engine emits Cost-Optimized,
+            Balanced, and Risk-Diversified; legacy aliases (Budget, Premium,
+            Resilient) are also accepted.
         total_cost: Total cost of the solution.
         risk_score: Risk score of the solution (0-10).
 
@@ -149,9 +155,9 @@ def explain_solution(solution_name: str, total_cost: float, risk_score: float) -
         Dict with explanation text and key insights.
     """
     explanations = {
-        "Budget": {
+        "Cost-Optimized": {
             "strategy": "Cost minimization with acceptable risk",
-            "description": f"The Budget solution achieves the lowest Total Cost of Ownership at ${total_cost:,.0f}. "
+            "description": f"The Cost-Optimized solution achieves the lowest Total Cost of Ownership at ${total_cost:,.0f}. "
                           f"Risk score of {risk_score:.1f}/10 is managed through volume consolidation and "
                           f"favorable payment terms. Best for cost-sensitive procurement with flexible timelines.",
             "trade_offs": ["Higher supplier concentration", "Longer lead times possible", "Cost savings from volume discounts"],
@@ -162,28 +168,29 @@ def explain_solution(solution_name: str, total_cost: float, risk_score: float) -
             "description": f"The Balanced solution provides the best risk-adjusted value at ${total_cost:,.0f}. "
                           f"Risk score of {risk_score:.1f}/10 balances cost efficiency with supply chain resilience. "
                           f"Recommended for most procurement scenarios.",
-            "trade_offs": ["Moderate cost premium over Budget", "Better quality assurance", "Leverages contracted suppliers"],
+            "trade_offs": ["Moderate cost premium over Cost-Optimized", "Better quality assurance", "Leverages contracted suppliers"],
             "recommended_for": "General procurement, production-critical materials, standard lead times",
         },
-        "Premium": {
+        "Risk-Diversified": {
             "strategy": "Quality and risk minimization priority",
-            "description": f"The Premium solution maximizes quality and minimizes risk at ${total_cost:,.0f}. "
-                          f"Risk score of {risk_score:.1f}/10 uses only trend-verified top-performing suppliers. "
-                          f"Supply chain insurance for critical production.",
-            "trade_offs": ["Highest TCO", "Shortest lead times", "Best supplier performance history"],
-            "recommended_for": "Critical materials, high-reliability requirements, time-sensitive production",
-        },
-        "Resilient": {
-            "strategy": "Demand uncertainty and disruption protection",
-            "description": f"The Resilient solution optimizes for supply chain disruption protection at ${total_cost:,.0f}. "
-                          f"Risk score of {risk_score:.1f}/10 with demand buffers to handle forecast uncertainty. "
-                          f"Quantities inflated to protect against demand surges.",
-            "trade_offs": ["Higher quantities than base forecast", "Broader supplier diversification", "Buffer stock costs"],
-            "recommended_for": "Volatile demand, long lead times, geopolitically exposed supply chains",
+            "description": f"The Risk-Diversified solution maximizes quality and minimizes risk at ${total_cost:,.0f}. "
+                          f"Risk score of {risk_score:.1f}/10 uses only trend-verified top-performing suppliers "
+                          f"with no single supplier exceeding 25% share. Supply chain insurance for critical production.",
+            "trade_offs": ["Highest TCO", "Broad supplier diversification", "Best supplier performance history"],
+            "recommended_for": "Critical materials, high-reliability requirements, geopolitically exposed supply chains",
         },
     }
+    # Map legacy aliases and case/format variants to the current strategy names.
+    aliases = {
+        "budget": "Cost-Optimized", "costoptimized": "Cost-Optimized",
+        "balanced": "Balanced",
+        "premium": "Risk-Diversified", "resilient": "Risk-Diversified",
+        "riskdiversified": "Risk-Diversified",
+    }
+    normalized = solution_name.lower().replace("-", "").replace("_", "").replace(" ", "")
+    key = aliases.get(normalized, solution_name)
 
-    result = explanations.get(solution_name, {
+    result = explanations.get(key, {
         "strategy": "Custom optimization",
         "description": f"Solution '{solution_name}' with cost ${total_cost:,.0f} and risk {risk_score:.1f}/10.",
         "trade_offs": [],
@@ -463,7 +470,7 @@ def query_defect_data(
 _SYSTEM_PROMPT = """You are a senior procurement analyst at VoltCycle, an e-bike manufacturer. You optimize supplier selection across a 16-material BOM for urban and mountain e-bikes.
 
 TOOLS AVAILABLE:
-- optimize_suppliers: Run multi-objective optimization (Budget, Balanced, Premium, Resilient strategies)
+- optimize_suppliers: Run multi-objective optimization (Cost-Optimized, Balanced, Risk-Diversified strategies)
 - explain_solution: Get detailed analysis of a specific strategy
 - query_supplier_data: Query supplier network, performance, and material data
 - query_defect_data: Query defect tracking data — summaries, individual defects, reports, and supplier defect risk scores
@@ -720,8 +727,15 @@ def _fallback_response(message: str) -> str:
 
     # Explain request
     if "explain" in msg_lower:
-        for name in ["Budget", "Balanced", "Premium", "Resilient"]:
-            if name.lower() in msg_lower:
+        # Map any mentioned strategy name (current or legacy alias) to a canonical name.
+        strategy_keywords = {
+            "cost-optimized": "Cost-Optimized", "cost": "Cost-Optimized", "budget": "Cost-Optimized",
+            "balanced": "Balanced",
+            "risk-diversified": "Risk-Diversified", "risk": "Risk-Diversified",
+            "premium": "Risk-Diversified", "resilient": "Risk-Diversified",
+        }
+        for keyword, name in strategy_keywords.items():
+            if keyword in msg_lower:
                 result = explain_solution(name, 850000, 3.5)
                 return (
                     f"**{result['solution_name']}** - {result['strategy']}\n\n"
@@ -729,7 +743,7 @@ def _fallback_response(message: str) -> str:
                     f"Trade-offs: {', '.join(result['trade_offs'])}\n\n"
                     f"Recommended for: {result['recommended_for']}"
                 )
-        return "Which solution would you like me to explain? Options: Budget, Balanced, Premium, Resilient."
+        return "Which solution would you like me to explain? Options: Cost-Optimized, Balanced, Risk-Diversified."
 
     # Defect / quality / recall queries
     if any(kw in msg_lower for kw in [

@@ -110,7 +110,7 @@ class SupplierAllocation(BaseModel):
 class SupplierMix(BaseModel):
     """One solution in the Pareto frontier."""
 
-    name: str = Field(..., description="Solution name (Budget, Balanced, Premium, Resilient)")
+    name: str = Field(..., description="Solution name (Cost-Optimized, Balanced, Risk-Diversified)")
     total_cost: float = Field(..., gt=0)
     risk_score: float = Field(..., ge=0.0, le=10.0)
     quality_score: float = Field(..., ge=0.0, le=10.0)

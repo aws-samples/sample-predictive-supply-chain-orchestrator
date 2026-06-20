@@ -15,6 +15,7 @@ bedrock-agentcore-starter-toolkit, not CDK. See:
 import os
 import aws_cdk as cdk
 from aws_cdk import Tags
+from cdk_nag import AwsSolutionsChecks
 
 from stacks.identity_stack import IdentityStack
 from stacks.data_stack import DataStack
@@ -30,11 +31,16 @@ from stacks.observability_stack import ObservabilityStack
 from stacks.api_stack import ApiStack
 from stacks.frontend_stack import FrontendStack
 from stacks.sagemaker_forecast_stack import SageMakerForecastStack
-# ChronosEc2Stack removed — using SageMaker for forecasting
 # from stacks.runtime_stack import RuntimeStack  # deployed via CLI
 
 
 app = cdk.App()
+
+# Run cdk-nag AWS Solutions checks at synth time so security findings are
+# surfaced (and any suppressions are real, justified exceptions). Set
+# CDK_NAG_DISABLE=1 to skip locally when iterating quickly.
+if os.environ.get("CDK_NAG_DISABLE", "") != "1":
+    cdk.Aspects.of(app).add(AwsSolutionsChecks(verbose=True))
 
 env = cdk.Environment(
     account=os.environ.get("CDK_DEFAULT_ACCOUNT"),
