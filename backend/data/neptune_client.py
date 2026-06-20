@@ -25,6 +25,19 @@ except Exception:
 logger = structlog.get_logger()
 
 
+def _validate_graph_id(value: str, field_name: str) -> str:
+    """Validate a vertex/edge ID before interpolating into a Gremlin query.
+
+    Prevents Gremlin injection: IDs may only contain alphanumerics, hyphens,
+    and underscores (e.g. MAT-BAT-001, SUP-001). Anything else is rejected.
+    """
+    if not value:
+        raise ValueError(f"{field_name} cannot be empty")
+    if not value.replace("-", "").replace("_", "").isalnum():
+        raise ValueError(f"Invalid {field_name}: {value!r}")
+    return value
+
+
 class NeptuneClient:
     """
     Neptune graph database client.
@@ -232,8 +245,7 @@ class NeptuneClient:
         """Get supplier-material relationships from Neptune."""
         try:
             if supplier_id:
-                if not supplier_id.replace('-', '').replace('_', '').isalnum():
-                    raise ValueError(f"Invalid supplier_id: {supplier_id}")
+                _validate_graph_id(supplier_id, "supplier_id")
                 query = f"g.V('{supplier_id}').outE('supplies').elementMap().toList()"
             else:
                 query = "g.E().hasLabel('supplies').elementMap().toList()"
@@ -326,15 +338,14 @@ class NeptuneClient:
         Returns:
             Network graph with vertices and edges
         """
-        if not supplier_id:
-            raise ValueError("supplier_id cannot be empty")
-        
+        _validate_graph_id(supplier_id, "supplier_id")
+
         logger.info(
             "getting_supplier_network",
             supplier_id=supplier_id,
             depth=depth
         )
-        
+
         try:
             # Use HTTP API instead of Gremlin WebSocket
             query = (
@@ -565,8 +576,7 @@ class NeptuneClient:
     def find_alternative_suppliers_http(self, material_id: str) -> List[Dict[str, Any]]:
         """Find suppliers for a material via Neptune graph traversal."""
         try:
-            if not material_id.replace('-', '').replace('_', '').isalnum():
-                raise ValueError(f"Invalid material_id: {material_id}")
+            _validate_graph_id(material_id, "material_id")
             raw = self._http_query(
                 f"g.V('{material_id}').in('supplies').elementMap().toList()"
             )
@@ -590,8 +600,7 @@ class NeptuneClient:
     def get_supplier_materials_graph(self, supplier_id: str) -> List[Dict[str, Any]]:
         """Get all materials supplied by a specific supplier via graph traversal."""
         try:
-            if not supplier_id.replace('-', '').replace('_', '').isalnum():
-                raise ValueError(f"Invalid supplier_id: {supplier_id}")
+            _validate_graph_id(supplier_id, "supplier_id")
             raw = self._http_query(
                 f"g.V('{supplier_id}').out('supplies').elementMap().toList()"
             )

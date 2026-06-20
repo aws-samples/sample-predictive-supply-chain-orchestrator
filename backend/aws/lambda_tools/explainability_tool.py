@@ -4,13 +4,16 @@ Explainability tool for Bedrock agent.
 Lambda function that generates human-readable explanations for
 optimization decisions.
 
+Invoked as an AgentCore Gateway MCP target — returns a raw dict (the
+Gateway serializes the return value directly as the MCP tool result).
+Errors are raised so the Gateway marks the tool call as failed.
+
 Follows CDE standards:
 - Type hints on all functions
 - Error handling and validation
 - Structured logging
 """
 
-import json
 from typing import Dict, Any
 import structlog
 
@@ -26,7 +29,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         context: Lambda context
 
     Returns:
-        Human-readable explanation of optimization decision
+        Dict with the explanation and solution_name.
 
     Expected event structure:
     {
@@ -37,69 +40,40 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         "allocations": [...]
     }
     """
-    try:
-        logger.info(
-            "explainability_tool_invoked",
-            request_id=context.aws_request_id if context else "local"
-        )
+    logger.info(
+        "explainability_tool_invoked",
+        request_id=context.aws_request_id if context else "local"
+    )
 
-        # Validate input
-        solution_name = event.get("solution_name")
-        if not solution_name:
-            raise ValueError("solution_name is required")
+    # Validate input
+    solution_name = event.get("solution_name")
+    if not solution_name:
+        raise ValueError("solution_name is required")
 
-        total_cost = event.get("total_cost", 0)
-        risk_score = event.get("risk_score", 0)
-        quality_score = event.get("quality_score", 0)
-        allocations = event.get("allocations", [])
+    total_cost = event.get("total_cost", 0)
+    risk_score = event.get("risk_score", 0)
+    quality_score = event.get("quality_score", 0)
+    allocations = event.get("allocations", [])
 
-        # Generate explanation
-        explanation = _generate_explanation(
-            solution_name,
-            total_cost,
-            risk_score,
-            quality_score,
-            allocations
-        )
+    # Generate explanation
+    explanation = _generate_explanation(
+        solution_name,
+        total_cost,
+        risk_score,
+        quality_score,
+        allocations
+    )
 
-        logger.info(
-            "explanation_generated",
-            solution_name=solution_name,
-            request_id=context.aws_request_id if context else "local"
-        )
+    logger.info(
+        "explanation_generated",
+        solution_name=solution_name,
+        request_id=context.aws_request_id if context else "local"
+    )
 
-        return {
-            "statusCode": 200,
-            "body": json.dumps({
-                "explanation": explanation,
-                "solution_name": solution_name
-            })
-        }
-
-    except ValueError as e:
-        logger.warning(
-            "explainability_validation_error",
-            error=str(e)
-        )
-        return {
-            "statusCode": 400,
-            "body": json.dumps({
-                "error": f"Validation error: {str(e)}"
-            })
-        }
-
-    except Exception as e:
-        logger.error(
-            "explainability_tool_error",
-            error=str(e),
-            exc_info=True
-        )
-        return {
-            "statusCode": 500,
-            "body": json.dumps({
-                "error": "Internal error generating explanation"
-            })
-        }
+    return {
+        "explanation": explanation,
+        "solution_name": solution_name,
+    }
 
 
 def _generate_explanation(
@@ -113,7 +87,9 @@ def _generate_explanation(
     Generate human-readable explanation.
 
     Args:
-        solution_name: Name of solution (Budget, Balanced, Premium, Resilient)
+        solution_name: Name of solution. The optimization engine emits
+            Cost-Optimized, Balanced, and Risk-Diversified; legacy names
+            (Budget, Premium, Resilient) are also accepted as aliases.
         total_cost: Total cost in USD
         risk_score: Risk score (0-10)
         quality_score: Quality score (0-10)
@@ -133,8 +109,14 @@ def _generate_explanation(
     total_carrying = sum(alloc.get("carrying_cost", 0) for alloc in allocations)
     has_tco = total_freight > 0 or total_carbon > 0 or total_carrying > 0
 
+    # Normalize strategy name: engine emits Cost-Optimized / Balanced /
+    # Risk-Diversified; map legacy aliases to the same buckets.
+    normalized = solution_name.lower().replace("-", "").replace("_", "").replace(" ", "")
+    cost_aliases = {"costoptimized", "budget", "cost"}
+    quality_aliases = {"riskdiversified", "premium", "risk"}
+
     # Generate explanation based on solution characteristics
-    if solution_name.lower() == "budget":
+    if normalized in cost_aliases:
         explanation = (
             f"The {solution_name} solution prioritizes cost minimization at ${total_cost:,.0f}. "
             f"This option uses {unique_suppliers} supplier(s) and accepts higher risk "
@@ -143,7 +125,7 @@ def _generate_explanation(
             f"Best for: Budget-conscious procurement where cost is the primary driver."
         )
 
-    elif solution_name.lower() == "balanced":
+    elif normalized == "balanced":
         explanation = (
             f"The {solution_name} solution offers optimal balance at ${total_cost:,.0f}. "
             f"This option distributes orders across {unique_suppliers} supplier(s) to achieve "
@@ -151,7 +133,7 @@ def _generate_explanation(
             f"Best for: Most procurement scenarios requiring balanced trade-offs."
         )
 
-    elif solution_name.lower() == "premium":
+    elif normalized in quality_aliases:
         explanation = (
             f"The {solution_name} solution maximizes quality and minimizes risk at ${total_cost:,.0f}. "
             f"This option uses {unique_suppliers} high-quality supplier(s) with excellent ratings. "
@@ -159,7 +141,7 @@ def _generate_explanation(
             f"Best for: Critical production where supply chain reliability is paramount."
         )
 
-    elif solution_name.lower() == "resilient":
+    elif normalized == "resilient":
         explanation = (
             f"The {solution_name} solution optimizes for demand uncertainty at ${total_cost:,.0f}. "
             f"Quantities are adjusted upward based on demand forecast confidence intervals "

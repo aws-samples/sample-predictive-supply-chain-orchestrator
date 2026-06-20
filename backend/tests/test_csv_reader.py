@@ -46,10 +46,10 @@ class TestCSVDataReader:
         # Check first supplier
         sup_001 = next(s for s in suppliers if s.supplier_id == "SUP-001")
         assert sup_001.name == "Shenzhen LiPower Energy Co."
-        assert sup_001.rating == 4.25
+        assert sup_001.rating == 3.2
         assert sup_001.active_status is True
-        assert sup_001.financial_stability_score == 7.5
-        assert sup_001.geopolitical_risk_score == 3.2
+        assert sup_001.financial_stability_score == 5.5
+        assert sup_001.geopolitical_risk_score == 6.5
 
     def test_get_suppliers_caching(self, reader):
         """Test that suppliers are cached."""

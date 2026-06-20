@@ -17,6 +17,7 @@ import json
 import csv
 import time
 import os
+import logging
 import urllib3
 from typing import Dict, Any, List
 from io import StringIO
@@ -27,6 +28,9 @@ from botocore.config import Config
 from botocore.auth import SigV4Auth
 from botocore.awsrequest import AWSRequest
 from botocore.credentials import Credentials
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 # Initialize clients with explicit timeouts (increased for VPC Lambda)
 boto_config = Config(
@@ -141,18 +145,18 @@ def transform_supplier_materials_to_neptune_csv(supplier_materials_csv: str) -> 
 
 def read_s3_csv(bucket: str, key: str) -> str:
     """Read CSV file from S3."""
-    print(f"Reading s3://{bucket}/{key}...")
+    logger.info("Reading s3://%s/%s...", bucket, key)
     try:
         response = s3_client.get_object(Bucket=bucket, Key=key)
         content = response['Body'].read().decode('utf-8')
-        print(f"Successfully read {len(content)} bytes from s3://{bucket}/{key}")
+        logger.info("Successfully read %d bytes from s3://%s/%s", len(content), bucket, key)
         return content
     except ClientError as e:
         error_code = e.response['Error']['Code']
-        print(f"S3 ClientError reading s3://{bucket}/{key}: {error_code} - {e}")
+        logger.error("S3 ClientError reading s3://%s/%s: %s - %s", bucket, key, error_code, e)
         raise
     except Exception as e:
-        print(f"Unexpected error reading s3://{bucket}/{key}: {type(e).__name__} - {e}")
+        logger.error("Unexpected error reading s3://%s/%s: %s - %s", bucket, key, type(e).__name__, e)
         raise
 
 
@@ -165,9 +169,9 @@ def upload_to_s3(bucket: str, key: str, content: str) -> None:
             Body=content.encode('utf-8'),
             ContentType='text/csv'
         )
-        print(f"Uploaded to s3://{bucket}/{key}")
+        logger.info("Uploaded to s3://%s/%s", bucket, key)
     except ClientError as e:
-        print(f"Error uploading to s3://{bucket}/{key}: {e}")
+        logger.error("Error uploading to s3://%s/%s: %s", bucket, key, e)
         raise
 
 
@@ -193,7 +197,7 @@ def start_neptune_bulk_load(
         }
     }
 
-    print(f"Starting Neptune bulk load from s3://{s3_bucket}/{s3_prefix}/")
+    logger.info("Starting Neptune bulk load from s3://%s/%s/", s3_bucket, s3_prefix)
 
     body = json.dumps(payload)
     headers = {'Content-Type': 'application/json'}
@@ -212,7 +216,7 @@ def start_neptune_bulk_load(
     result = json.loads(response.data.decode('utf-8'))
     load_id = result['payload']['loadId']
 
-    print(f"Bulk load started. Load ID: {load_id}")
+    logger.info("Bulk load started. Load ID: %s", load_id)
     return load_id
 
 
@@ -242,11 +246,11 @@ def wait_for_neptune_load(neptune_endpoint: str, load_id: str, timeout_seconds: 
         status_response = check_neptune_load_status(neptune_endpoint, load_id)
         status = status_response['payload']['overallStatus']['status']
         
-        print(f"Load status: {status} ({int(elapsed)}s elapsed)")
-        
+        logger.info("Load status: %s (%ds elapsed)", status, int(elapsed))
+
         if status == 'LOAD_COMPLETED':
             total_records = status_response['payload']['overallStatus'].get('totalRecords', 0)
-            print(f"Load completed successfully. Total records: {total_records}")
+            logger.info("Load completed successfully. Total records: %s", total_records)
             return
         elif status in ['LOAD_FAILED', 'LOAD_CANCELLED']:
             raise Exception(f"Neptune bulk load failed with status: {status}")
@@ -261,7 +265,13 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     Used with CDK cr.Provider — must return a dict on success and raise on failure.
     The Provider framework handles CloudFormation responses automatically.
     """
-    print(f"Event: {json.dumps(event)}")
+    # Do NOT log the full event — ResourceProperties may contain sensitive
+    # values (endpoints, ARNs). Log only non-sensitive routing fields.
+    logger.info(
+        "Received event: RequestType=%s LogicalResourceId=%s",
+        event.get('RequestType'),
+        event.get('LogicalResourceId'),
+    )
 
     request_type = event['RequestType']
     properties = event['ResourceProperties']
@@ -271,7 +281,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
 
     if request_type == 'Delete':
         # No cleanup needed - Neptune data persists
-        print("Delete request - no action needed")
+        logger.info("Delete request - no action needed")
         return {'Status': 'DELETE_SKIPPED'}
 
     # Extract properties
@@ -280,25 +290,25 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     iam_role_arn = properties['IamRoleArn']
 
     # Step 1: Read application CSVs from S3
-    print("Step 1: Reading application CSVs from S3...")
+    logger.info("Step 1: Reading application CSVs from S3...")
     suppliers_csv = read_s3_csv(s3_bucket, 'csv-data/suppliers.csv')
     materials_csv = read_s3_csv(s3_bucket, 'csv-data/materials.csv')
     supplier_materials_csv = read_s3_csv(s3_bucket, 'csv-data/supplier_materials.csv')
 
     # Step 2: Transform to Neptune format
-    print("Step 2: Transforming CSVs to Neptune format...")
+    logger.info("Step 2: Transforming CSVs to Neptune format...")
     suppliers_neptune = transform_suppliers_to_neptune_csv(suppliers_csv)
     materials_neptune = transform_materials_to_neptune_csv(materials_csv)
     edges_neptune = transform_supplier_materials_to_neptune_csv(supplier_materials_csv)
 
     # Step 3: Upload Neptune CSVs to S3
-    print("Step 3: Uploading Neptune CSVs to S3...")
+    logger.info("Step 3: Uploading Neptune CSVs to S3...")
     upload_to_s3(s3_bucket, 'neptune-load/suppliers-vertices.csv', suppliers_neptune)
     upload_to_s3(s3_bucket, 'neptune-load/materials-vertices.csv', materials_neptune)
     upload_to_s3(s3_bucket, 'neptune-load/supplies-edges.csv', edges_neptune)
 
     # Step 4: Start Neptune bulk load
-    print("Step 4: Starting Neptune bulk load...")
+    logger.info("Step 4: Starting Neptune bulk load...")
     load_id = start_neptune_bulk_load(
         neptune_endpoint=neptune_endpoint,
         s3_bucket=s3_bucket,
@@ -308,11 +318,11 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     )
 
     # Step 5: Wait for completion
-    print("Step 5: Waiting for Neptune bulk load to complete...")
+    logger.info("Step 5: Waiting for Neptune bulk load to complete...")
     wait_for_neptune_load(neptune_endpoint, load_id, timeout_seconds=600)
 
     # Success — return dict for cr.Provider framework
-    print(f"Neptune data loaded successfully. Load ID: {load_id}")
+    logger.info("Neptune data loaded successfully. Load ID: %s", load_id)
     return {
         'Data': {
             'LoadId': load_id,

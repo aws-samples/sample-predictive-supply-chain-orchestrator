@@ -111,11 +111,36 @@ class SageMakerForecastStack(Stack):
             [
                 {
                     "id": "AwsSolutions-IAM4",
-                    "reason": "AmazonSageMakerFullAccess managed policy required for JumpStart model deployment",
+                    "appliesTo": [
+                        "Policy::arn:<AWS::Partition>:iam::aws:policy/"
+                        "AmazonSageMakerFullAccess",
+                    ],
+                    "reason": (
+                        "AmazonSageMakerFullAccess is the AWS-recommended "
+                        "policy for JumpStartModel.deploy(), which transparently "
+                        "creates the Model, EndpointConfig, and Endpoint and "
+                        "pulls the model image from ECR; the individual "
+                        "create/describe actions and their resource ARNs are "
+                        "not known until the deploy script resolves the "
+                        "JumpStart artifact at run time."
+                    ),
                 },
                 {
                     "id": "AwsSolutions-IAM5",
-                    "reason": "CloudWatch wildcard for log streams",
+                    "appliesTo": [
+                        "Resource::arn:aws:s3:::jumpstart-cache-prod-*",
+                        "Resource::arn:aws:s3:::jumpstart-cache-prod-*/*",
+                        {
+                            "regex": "/^Resource::arn:aws:logs:.*:log-group:"
+                            "/aws/sagemaker/\\*$/g"
+                        },
+                    ],
+                    "reason": (
+                        "S3 read is scoped to the regional JumpStart model "
+                        "cache buckets (their exact names vary by region) and "
+                        "CloudWatch Logs is scoped to the /aws/sagemaker/ "
+                        "log-group hierarchy the endpoint writes to."
+                    ),
                 },
             ],
             apply_to_children=True,

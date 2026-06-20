@@ -236,26 +236,28 @@ if [ -n "$POOL_ID_FOR_USER" ]; then
   aws cognito-idp add-custom-attributes --user-pool-id "$POOL_ID_FOR_USER" \
     --custom-attributes 'Name=role,AttributeDataType=String,Mutable=true,StringAttributeConstraints={MaxLength=50}' 2>/dev/null || true
 
-  # Prompt for password or use env var
+  # Demo-user password: use $DEMO_PASSWORD if provided, otherwise auto-generate
+  # a strong random one and print it once. Never hardcode a credential.
   DEMO_PASSWORD="${DEMO_PASSWORD:-}"
+  DEMO_PASSWORD_GENERATED=false
   if [ -z "$DEMO_PASSWORD" ]; then
-    echo -n "  Enter password for demo users (min 8 chars, upper+lower+number+special): "
-    read -r DEMO_PASSWORD
-    if [ -z "$DEMO_PASSWORD" ]; then
-      echo "  No password provided — skipping user creation"
-      POOL_ID_FOR_USER=""
-    fi
+    # 24 random alphanumerics + fixed symbol/case/digit to satisfy Cognito policy
+    DEMO_PASSWORD="Demo-$(openssl rand -base64 24 | tr -dc 'A-Za-z0-9' | cut -c1-20)-7a!"
+    DEMO_PASSWORD_GENERATED=true
   fi
 
   if [ -n "$POOL_ID_FOR_USER" ]; then
-    # Create users with permanent passwords (no forced change on first login)
+    # Create users with permanent passwords (no forced change on first login).
+    # The temporary password is random per-run and immediately overwritten by
+    # the permanent DEMO_PASSWORD below — never hardcode a credential literal.
     for pair in "demo@voltcycle.com Admin" "analyst@voltcycle.com Analyst" "manager@voltcycle.com ProcurementManager"; do
       EMAIL=$(echo "$pair" | awk '{print $1}')
       ROLE=$(echo "$pair" | awk '{print $2}')
+      TEMP_PW="Tmp-$(openssl rand -base64 18 | tr -dc 'A-Za-z0-9')-9!"
       aws cognito-idp admin-create-user \
         --user-pool-id "$POOL_ID_FOR_USER" \
         --username "$EMAIL" \
-        --temporary-password TempPass123! \
+        --temporary-password "$TEMP_PW" \
         --user-attributes Name=email,Value="$EMAIL" Name=email_verified,Value=true \
         --message-action SUPPRESS 2>/dev/null || true
       aws cognito-idp admin-set-user-password \
@@ -312,5 +314,15 @@ echo "  Frontend:  $CLOUDFRONT_URL"
 echo "  API:       $API_URL"
 echo "  Agent ARN: $PROCUREMENT_AGENT_ARN"
 echo "  Users:     demo@voltcycle.com (Admin), analyst@voltcycle.com (Analyst), manager@voltcycle.com (ProcurementManager)"
+if [ -n "${DEMO_PASSWORD:-}" ]; then
+  if [ "${DEMO_PASSWORD_GENERATED:-false}" = "true" ]; then
+    echo ""
+    echo "  ⚠️  Auto-generated demo password (shown once — save it now):"
+    echo "      $DEMO_PASSWORD"
+    echo "      (set DEMO_PASSWORD before re-running to choose your own)"
+  else
+    echo "  Password:  (the DEMO_PASSWORD you provided)"
+  fi
+fi
 echo ""
 echo "Done!"

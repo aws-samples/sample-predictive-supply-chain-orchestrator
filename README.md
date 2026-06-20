@@ -1,5 +1,12 @@
 # Predictive Supply Chain Orchestrator
 
+> **Sample code — not for production use.** This is sample code for demonstration
+> and educational purposes. Work with your security and legal teams to meet your
+> organizational security, regulatory, and compliance requirements before
+> deploying any part of it. Deploying this sample creates AWS resources (Amazon
+> Neptune, a SageMaker GPU endpoint, NAT gateways, and more) that incur cost —
+> see [Cost Estimate](#cost-estimate-us-east-1) and run the teardown script when done.
+
 AI-powered procurement optimization for VoltCycle e-bike manufacturing. Combines SageMaker Chronos-2 demand forecasting, multi-objective Pareto optimization, and a multi-agent AI orchestrator to replace spreadsheet-based supplier allocation with mathematically optimal decisions.
 
 ## What It Does
@@ -87,7 +94,7 @@ Open http://localhost:5174. Run Forecast --> select P90 --> Optimize.
 bash scripts/deploy-all.sh
 ```
 
-Steps: Lambda layer --> 12 CDK stacks --> SageMaker Chronos-2 --> AgentCore agents --> Frontend to CloudFront.
+Steps: Lambda layer --> 14 CDK stacks --> SageMaker Chronos-2 --> AgentCore agents --> Frontend to CloudFront.
 
 ### Teardown
 
@@ -189,6 +196,29 @@ SupplyChainOptimization-v2/
 | **Total** | **~$1,022/month** |
 
 Delete SageMaker endpoint when not in use: `aws sagemaker delete-endpoint --endpoint-name chronos-2-forecast-endpoint`
+
+## Security
+
+This sample demonstrates several AWS security controls, but you must review and
+harden it against your own requirements before any production use:
+
+- **Authentication** — Amazon Cognito user pool with an API Gateway Cognito
+  authorizer on all API routes except the public `/health` check. The frontend
+  obtains JWTs from Cognito; the AgentCore Gateway validates the same tokens.
+- **Authorization** — AgentCore PolicyEngine (Cedar) RBAC and a Bedrock Guardrail
+  (PII redaction + content filtering) gate agent tool use.
+- **Least privilege** — IAM policies are scoped to specific resource ARNs; the
+  CDK app runs `cdk-nag` (AWS Solutions ruleset) at synth time and every
+  suppression carries a specific justification.
+- **Data protection** — S3 buckets block public access and enforce encryption +
+  TLS; Neptune is encrypted, IAM-authenticated, and deployed in private subnets.
+- **Input validation** — graph IDs are allowlist-validated before use in Neptune
+  queries; API inputs are validated server-side.
+
+Before deploying, review IAM policies, enable WAF/access logging and MFA as your
+environment requires, and confirm the guardrail and Cedar policies match your
+data-handling obligations. To report a security issue, see
+[CONTRIBUTING](./CONTRIBUTING.md#reporting-security-issues).
 
 ## Documentation
 

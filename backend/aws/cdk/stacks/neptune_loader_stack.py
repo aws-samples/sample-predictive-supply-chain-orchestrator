@@ -66,17 +66,28 @@ class NeptuneLoaderStack(Stack):
             )
         )
 
-        # Grant Neptune IAM auth permissions (required when iam_auth_enabled=True)
-        # Neptune IAM auth uses cluster resource ID (not cluster identifier) in ARNs.
-        # Use attr_cluster_resource_id for the correct ARN format.
+        # Grant Neptune IAM-auth permissions (required when
+        # iam_auth_enabled=True). Neptune IAM auth uses the cluster resource ID
+        # (not the cluster identifier) in ARNs, so attr_cluster_resource_id is
+        # used. Scoped to the bulk-loader + query actions the loader needs
+        # rather than the full neptune-db:* action set.
         loader_role.add_to_policy(
             iam.PolicyStatement(
                 effect=iam.Effect.ALLOW,
                 actions=[
-                    "neptune-db:*",
+                    "neptune-db:connect",
+                    "neptune-db:StartLoaderJob",
+                    "neptune-db:GetLoaderJobStatus",
+                    "neptune-db:ReadDataViaQuery",
+                    "neptune-db:WriteDataViaQuery",
+                    "neptune-db:GetQueryStatus",
                 ],
                 resources=[
-                    f"arn:aws:neptune-db:{Stack.of(self).region}:{Stack.of(self).account}:{neptune_cluster.attr_cluster_resource_id}/*"
+                    (
+                        f"arn:aws:neptune-db:{Stack.of(self).region}:"
+                        f"{Stack.of(self).account}:"
+                        f"{neptune_cluster.attr_cluster_resource_id}/*"
+                    )
                 ]
             )
         )
@@ -144,17 +155,109 @@ class NeptuneLoaderStack(Stack):
             [
                 {
                     "id": "AwsSolutions-IAM4",
-                    "reason": "AWSLambdaVPCAccessExecutionRole is AWS managed policy required for VPC Lambda"
-                }
-            ]
+                    "appliesTo": [
+                        "Policy::arn:<AWS::Partition>:iam::aws:policy/"
+                        "service-role/AWSLambdaVPCAccessExecutionRole",
+                    ],
+                    "reason": (
+                        "AWS-managed VPC access execution role is required for "
+                        "a Lambda placed in a VPC to manage its ENIs; an "
+                        "equivalent customer-managed policy adds maintenance "
+                        "burden without security benefit for a sample."
+                    ),
+                },
+                {
+                    "id": "AwsSolutions-IAM5",
+                    "appliesTo": [
+                        "Action::s3:GetBucket*",
+                        "Action::s3:GetObject*",
+                        "Action::s3:List*",
+                        "Action::s3:Abort*",
+                        "Action::s3:DeleteObject*",
+                        "Resource::<ProcurementDataBucket28D81D70.Arn>/*",
+                        {"regex": "/^Resource::arn:aws:neptune-db:.*$/g"},
+                    ],
+                    "reason": (
+                        "Scoped S3 read/write to the procurement data bucket "
+                        "only; the wildcard actions are the "
+                        "GetObject/GetBucket/List/Abort/DeleteObject "
+                        "sub-actions of the grant_read_write permission set "
+                        "the loader uses to read application CSVs and write "
+                        "Neptune-format CSVs. The neptune-db statement is "
+                        "scoped to this cluster's resource ID."
+                    ),
+                },
+            ],
+            apply_to_children=True,
         )
-        
+
         NagSuppressions.add_resource_suppressions(
             loader_function,
             [
                 {
                     "id": "AwsSolutions-L1",
-                    "reason": "Python 3.11 is the latest supported runtime for this use case"
+                    "reason": (
+                        "Runtime pinned to Python 3.11 to match the loader's "
+                        "deployment package and the shared dependency layout; "
+                        "moving to a newer runtime requires revalidating the "
+                        "bundled dependencies."
+                    ),
                 }
-            ]
+            ],
+        )
+
+        # The custom-resource Provider framework Lambda and its role are
+        # created and managed by the CDK Provider construct and are not
+        # user-configurable.
+        NagSuppressions.add_resource_suppressions_by_path(
+            self,
+            "/" + self.stack_name
+            + "/NeptuneLoaderProvider/framework-onEvent/ServiceRole/Resource",
+            [
+                {
+                    "id": "AwsSolutions-IAM4",
+                    "appliesTo": [
+                        "Policy::arn:<AWS::Partition>:iam::aws:policy/"
+                        "service-role/AWSLambdaBasicExecutionRole",
+                    ],
+                    "reason": (
+                        "AWS-managed basic-execution role is required by the "
+                        "CDK Provider framework Lambda; not user-configurable."
+                    ),
+                }
+            ],
+        )
+        NagSuppressions.add_resource_suppressions_by_path(
+            self,
+            "/" + self.stack_name
+            + "/NeptuneLoaderProvider/framework-onEvent/ServiceRole/"
+            "DefaultPolicy/Resource",
+            [
+                {
+                    "id": "AwsSolutions-IAM5",
+                    "appliesTo": [
+                        "Resource::<NeptuneLoaderFunction36609461.Arn>:*",
+                    ],
+                    "reason": (
+                        "The CDK Provider framework grants lambda:InvokeFunction "
+                        "on all versions/aliases of the loader function it "
+                        "fronts; this is created by the Provider construct and "
+                        "is not user-configurable."
+                    ),
+                }
+            ],
+        )
+        NagSuppressions.add_resource_suppressions_by_path(
+            self,
+            "/" + self.stack_name
+            + "/NeptuneLoaderProvider/framework-onEvent/Resource",
+            [
+                {
+                    "id": "AwsSolutions-L1",
+                    "reason": (
+                        "Runtime is managed by the CDK Provider framework "
+                        "construct and is not user-configurable."
+                    ),
+                }
+            ],
         )

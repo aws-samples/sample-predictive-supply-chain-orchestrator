@@ -1,4 +1,24 @@
-"""Admin blueprint — AgentCore Gateway, Memory, Policies, Neptune reload."""
+"""Admin blueprint — AgentCore Gateway, Memory, Policies, Neptune reload.
+
+SECURITY / ACCESS CONTROL
+=========================
+These are ADMIN-ONLY operations. Several routes here (the ``/api/admin/memory/*``
+endpoints) expose stored user conversation memory and long-term memory records.
+They accept an ``actor_id`` and therefore can read ANY user's memory namespace —
+a potential IDOR (Insecure Direct Object Reference) if exposed without auth.
+
+The DEPLOYED path is protected at the API Gateway layer by a Cognito authorizer
+(see ``backend/aws/cdk/stacks/api_stack.py``). The Flask app itself enforces NO
+authentication or authorization. These endpoints MUST remain behind the Cognito
+authorizer and an admin-role check; they must NOT be exposed on a public,
+unauthenticated route.
+
+Defensive handling below: where a caller identity is available from the request
+context (the ``X-User-Id`` header injected by the authorizer, or the apig-wsgi
+``requestContext`` authorizer claims), we prefer it over the client-supplied
+``actor_id`` query param to reduce IDOR exposure. ``max_items``/``limit`` params
+are bounded to a small cap.
+"""
 
 import json
 import os
@@ -18,6 +38,60 @@ except ImportError:
 logger = structlog.get_logger()
 
 admin_bp = Blueprint("admin", __name__)
+
+# Maximum records any memory listing/search endpoint will return per call.
+MAX_MEMORY_ITEMS = 100
+
+
+def _caller_identity():
+    """Return the authenticated caller identity, if available.
+
+    The deployed stack sits behind a Cognito authorizer at API Gateway. The
+    caller's identity reaches Flask either via an ``X-User-Id`` header or via the
+    apig-wsgi ``requestContext`` authorizer claims (``sub``). Returns ``None`` when
+    no identity is present (e.g. local dev), so callers can fall back to the
+    query param.
+    """
+    # 1. Explicit header injected by the gateway / proxy.
+    header_id = request.headers.get("X-User-Id")
+    if header_id:
+        return header_id
+
+    # 2. apig-wsgi exposes the API Gateway requestContext on the WSGI environ.
+    request_context = request.environ.get("apig-wsgi.request", {})
+    if isinstance(request_context, dict):
+        authorizer = (
+            request_context.get("requestContext", {}).get("authorizer", {})
+        )
+        claims = authorizer.get("claims", authorizer.get("jwt", {}).get("claims", {}))
+        if isinstance(claims, dict):
+            sub = claims.get("sub") or claims.get("cognito:username")
+            if sub:
+                return sub
+
+    return None
+
+
+def _resolve_actor_id(default="demo-user"):
+    """Prefer the authenticated caller identity over the query param.
+
+    Mitigates IDOR: an authenticated caller can only read their own memory
+    namespace unless no identity is available (local/dev), in which case we fall
+    back to the supplied ``actor_id`` query param.
+    """
+    caller = _caller_identity()
+    if caller:
+        return caller
+    return request.args.get("actor_id", default)
+
+
+def _bounded_max_items(default, param="max_items"):
+    """Read and clamp a max-items/limit query param to ``MAX_MEMORY_ITEMS``."""
+    try:
+        requested = int(request.args.get(param, str(default)))
+    except (TypeError, ValueError):
+        requested = default
+    return max(1, min(requested, MAX_MEMORY_ITEMS))
 
 # ---------------------------------------------------------------------------
 # Module-level constants & helpers
@@ -200,7 +274,7 @@ def admin_memory_sessions():
     """List recent memory events (conversation turns stored in AgentCore Memory)."""
     try:
         data = _get_agentcore_data()
-        actor_id = request.args.get("actor_id", "demo-user")
+        actor_id = _resolve_actor_id()
 
         # List sessions for this actor — fetch all, sort by recency, take top 10
         sessions = []
@@ -349,8 +423,8 @@ def admin_memory_records():
     """List actual memory records from all strategy namespaces."""
     try:
         data = _get_agentcore_data()
-        actor_id = request.args.get("actor_id", "demo-user")
-        max_items = int(request.args.get("max_items", "50"))
+        actor_id = _resolve_actor_id()
+        max_items = _bounded_max_items(50)
 
         # Namespaces per strategy (must match memory_stack.py)
         strategy_namespaces = {
@@ -422,8 +496,8 @@ def admin_memory_search():
     try:
         data = _get_agentcore_data()
         query = request.args.get("q", "")
-        actor_id = request.args.get("actor_id", "demo-user")
-        max_items = int(request.args.get("max_items", "10"))
+        actor_id = _resolve_actor_id()
+        max_items = _bounded_max_items(10)
 
         if not query:
             return (

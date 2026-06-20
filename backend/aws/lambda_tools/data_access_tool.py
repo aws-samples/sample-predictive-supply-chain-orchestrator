@@ -205,73 +205,32 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         
         # Close Neptune connection
         neptune_client.close()
-        
-        return {
-            "statusCode": 200,
-            "body": json.dumps(result)
-        }
-    
+
+        # Return the raw result dict — the AgentCore Gateway serializes this
+        # directly as the MCP tool result. No API Gateway proxy envelope.
+        return result
+
+    # Re-raise on failure so the Gateway marks the tool call as failed
+    # (rather than returning a 200-shaped envelope the agent can't distinguish).
     except ValueError as e:
-        logger.warning(
-            "data_access_validation_error",
-            error=str(e)
-        )
-        return {
-            "statusCode": 400,
-            "body": json.dumps({
-                "error": f"Validation error: {str(e)}"
-            })
-        }
-    
+        logger.warning("data_access_validation_error", error=str(e))
+        raise
+
     except GremlinServerError as e:
-        logger.error(
-            "neptune_query_error",
-            error=str(e)
-        )
-        return {
-            "statusCode": 500,
-            "body": json.dumps({
-                "error": "Neptune query error"
-            })
-        }
-    
+        logger.error("neptune_query_error", error=str(e))
+        raise
+
     except ConnectionError as e:
-        logger.error(
-            "neptune_connection_error",
-            error=str(e)
-        )
-        return {
-            "statusCode": 503,
-            "body": json.dumps({
-                "error": "Neptune unavailable"
-            })
-        }
-    
+        logger.error("neptune_connection_error", error=str(e))
+        raise
+
     except ClientError as e:
         logger.error(
             "aws_service_error",
             error_code=e.response["Error"]["Code"],
             error=str(e)
         )
-        return {
-            "statusCode": 500,
-            "body": json.dumps({
-                "error": "AWS service error"
-            })
-        }
-    
-    except Exception as e:
-        logger.error(
-            "data_access_tool_error",
-            error=str(e),
-            exc_info=True
-        )
-        return {
-            "statusCode": 500,
-            "body": json.dumps({
-                "error": "Internal error accessing data"
-            })
-        }
+        raise
 
 
 def _forecast_demand(event: Dict[str, Any]) -> Dict[str, Any]:

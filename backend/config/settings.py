@@ -14,6 +14,8 @@ class Settings:
         self.data_path = os.environ.get("DATA_PATH", os.environ.get("DATA_DIR", "../data"))
         self.aws_region = os.environ.get("AWS_REGION", "us-east-1")
         self.log_level = os.environ.get("LOG_LEVEL", "INFO")
+        self.neptune_endpoint = os.environ.get("NEPTUNE_ENDPOINT", "")
+        self.neptune_port = int(os.environ.get("NEPTUNE_PORT", "8182"))
 
     @property
     def cors_origins_list(self):

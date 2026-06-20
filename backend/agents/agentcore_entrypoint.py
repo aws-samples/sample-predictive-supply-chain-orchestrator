@@ -6,9 +6,12 @@ Uses BedrockAgentCoreApp to expose the Strands agent via AgentCore Runtime.
 
 import os
 
+import structlog
 from strands import Agent, tool
 from strands.models import BedrockModel
 from bedrock_agentcore.runtime import BedrockAgentCoreApp
+
+logger = structlog.get_logger()
 
 from agents.procurement_agent import (
     optimize_suppliers,
@@ -55,7 +58,8 @@ def procurement_agent_handler(payload):
     Expected payload: {"prompt": "optimize for 500 e-bikes"}
     """
     user_input = payload.get("prompt", "")
-    print(f"User input: {user_input}")
+    # Do not log the full user input — it may contain PII. Log length only.
+    logger.info("invoke", input_length=len(user_input))
     response = agent(user_input)
     return response.message["content"][0]["text"]
 

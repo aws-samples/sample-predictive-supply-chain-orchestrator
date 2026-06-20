@@ -25,7 +25,7 @@ class TestOptimizeSuppliers:
         assert result["solutions_count"] >= 3
         for sol in result["solutions"]:
             assert sol["total_cost"] > 0
-            assert sol["name"] in ["Budget", "Balanced", "Premium", "Resilient"]
+            assert sol["name"] in ["Cost-Optimized", "Balanced", "Risk-Diversified"]
 
     def test_optimize_empty_materials(self):
         result = optimize_suppliers(materials=[], constraints={})
@@ -56,9 +56,10 @@ class TestExplainSolution:
         result = explain_solution("Premium", 1200000, 1.5)
         assert "quality" in result["strategy"].lower() or "risk" in result["strategy"].lower()
 
-    def test_explain_resilient(self):
+    def test_explain_resilient_alias(self):
+        # "Resilient" is a legacy alias mapped to the current Risk-Diversified strategy.
         result = explain_solution("Resilient", 950000, 2.8)
-        assert "demand" in result["strategy"].lower() or "disruption" in result["strategy"].lower()
+        assert "quality" in result["strategy"].lower() or "risk" in result["strategy"].lower()
 
     def test_explain_unknown(self):
         result = explain_solution("Custom", 500000, 5.0)
@@ -148,8 +149,9 @@ class TestInvokeAgent:
         assert "solution" in response.lower() or "optim" in response.lower()
 
     def test_invoke_explain(self):
+        # "Budget" is a legacy alias; the agent explains the Cost-Optimized strategy.
         response = invoke_agent("explain the Budget solution")
-        assert "budget" in response.lower()
+        assert "cost-optimized" in response.lower()
 
     def test_invoke_risk(self):
         response = invoke_agent("risk analysis")

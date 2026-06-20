@@ -14,7 +14,7 @@ export default function ERPIntegrationPanel() {
       <div className="erp-data-sources">
         <div className="erp-data-item">
           <CheckCircle size={14} color="#10b981" />
-          <span>Supplier Master: 15 suppliers</span>
+          <span>Supplier Registry: 15 suppliers</span>
         </div>
         <div className="erp-data-item">
           <CheckCircle size={14} color="#10b981" />

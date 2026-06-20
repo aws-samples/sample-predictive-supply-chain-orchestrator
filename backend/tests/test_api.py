@@ -87,8 +87,8 @@ class TestOptimizeEndpoint:
             content_type='application/json'
         )
         
-        # Flask returns 500 for JSON decode errors, not 400
-        assert response.status_code == 500
+        # Malformed JSON is a client error — the API returns 400 Bad Request.
+        assert response.status_code == 400
 
     def test_optimize_missing_materials(self, client):
         """Test optimization with missing materials."""

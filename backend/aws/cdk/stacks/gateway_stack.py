@@ -177,7 +177,7 @@ class GatewayStack(Stack):
                                         description=(
                                             "Run multi-objective supplier optimization for e-bike "
                                             "manufacturing materials. Returns Pareto frontier solutions "
-                                            "(Budget, Balanced, Premium, Resilient) with supplier "
+                                            "(Cost-Optimized, Balanced, Risk-Diversified) with supplier "
                                             "allocations, costs, risk scores, and quality metrics."
                                         ),
                                         input_schema=_schema("object", "Optimization request", properties={
@@ -277,7 +277,7 @@ class GatewayStack(Stack):
                                             "analysis, and TCO breakdown."
                                         ),
                                         input_schema=_schema("object", "Explanation request", properties={
-                                            "solution_name": _schema("string", "Solution name: Budget, Balanced, Premium, Resilient, or Custom"),
+                                            "solution_name": _schema("string", "Solution name: Cost-Optimized, Balanced, or Risk-Diversified"),
                                             "total_cost": _schema("number", "Total cost in USD"),
                                             "risk_score": _schema("number", "Risk score (0-10)"),
                                             "quality_score": _schema("number", "Quality score (0-10)"),

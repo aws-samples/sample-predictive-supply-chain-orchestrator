@@ -1,6 +1,13 @@
 """
 Flask API server for Demand Forecasting Agent
 Provides REST endpoints for frontend integration
+
+================================================================================
+LOCAL DEVELOPMENT SERVER ONLY — NOT FOR PRODUCTION.
+  - No authentication. Binds to localhost (127.0.0.1) only.
+  - CORS origin is restricted via the FORECAST_CORS_ORIGIN env var.
+  - Do not expose this server to a public network.
+================================================================================
 """
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -13,7 +20,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for frontend access
+# Restrict CORS to an explicit allowlist (local dev default), overridable via env.
+CORS(app, origins=os.environ.get("FORECAST_CORS_ORIGIN", "http://localhost:5173").split(","))
 
 @app.route('/health', methods=['GET'])
 def health_check():
@@ -61,7 +69,7 @@ def query_agent():
     except Exception as e:
         logger.error(f"Error processing query: {str(e)}")
         return jsonify({
-            "error": str(e),
+            "error": "Internal error",
             "status": "error"
         }), 500
 
@@ -77,7 +85,7 @@ def get_materials():
     except Exception as e:
         logger.error(f"Error getting materials: {str(e)}")
         return jsonify({
-            "error": str(e),
+            "error": "Internal error",
             "status": "error"
         }), 500
 
@@ -94,7 +102,7 @@ def get_seasonal_analysis(material_id):
     except Exception as e:
         logger.error(f"Error analyzing material {material_id}: {str(e)}")
         return jsonify({
-            "error": str(e),
+            "error": "Internal error",
             "status": "error"
         }), 500
 

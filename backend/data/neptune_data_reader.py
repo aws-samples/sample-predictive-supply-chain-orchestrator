@@ -32,6 +32,7 @@ from data.csv_reader import (
     SupplierPerformance,
     SupplierContract
 )
+from data.neptune_client import _validate_graph_id
 
 logger = structlog.get_logger()
 
@@ -486,6 +487,7 @@ class NeptuneDataReader:
 
         try:
             # Query Neptune for supplier vertex properties
+            _validate_graph_id(supplier_id, "supplier_id")
             query = f"g.V('{supplier_id}').elementMap().toList()"
             raw = self._http_query(query)
             items = self._parse_results(raw)
@@ -600,6 +602,7 @@ class NeptuneDataReader:
 
         try:
             # Query Neptune for supplier vertex properties
+            _validate_graph_id(supplier_id, "supplier_id")
             query = f"g.V('{supplier_id}').elementMap().toList()"
             raw = self._http_query(query)
             items = self._parse_results(raw)
@@ -830,6 +833,7 @@ class NeptuneDataReader:
 
         try:
             # Query Neptune for defect records
+            _validate_graph_id(supplier_id, "supplier_id")
             query = f"g.V('{supplier_id}').outE('has_defect').inV().elementMap().toList()"
             raw = self._http_query(query)
             items = self._parse_results(raw)

@@ -149,7 +149,14 @@ class FrontendStack(Stack):
             [
                 {
                     "id": "AwsSolutions-S1",
-                    "reason": "Access logging not required for static website bucket in development",
+                    "reason": (
+                        "This bucket is private (BLOCK_ALL public access) and "
+                        "is only reachable through the CloudFront Origin "
+                        "Access Identity; request auditing is performed at the "
+                        "CloudFront layer rather than via S3 server access "
+                        "logs to avoid an additional log bucket per static "
+                        "site."
+                    ),
                 }
             ],
         )
@@ -159,19 +166,108 @@ class FrontendStack(Stack):
             [
                 {
                     "id": "AwsSolutions-CFR1",
-                    "reason": "Geo restriction not needed for hackathon demo",
+                    "reason": (
+                        "Geographic restriction is left to the deploying "
+                        "account's policy; this is a globally accessible "
+                        "public web UI with no country-level access "
+                        "requirement."
+                    ),
                 },
                 {
                     "id": "AwsSolutions-CFR2",
-                    "reason": "WAF not needed for hackathon demo",
+                    "reason": (
+                        "A WAFv2 web ACL is left to the deploying account's "
+                        "Firewall Manager / org policy rather than hard-coded "
+                        "in this stack; the distribution serves only static "
+                        "assets behind OAC."
+                    ),
                 },
                 {
                     "id": "AwsSolutions-CFR4",
-                    "reason": "Using default CloudFront certificate for demo",
+                    "reason": (
+                        "The distribution uses the default CloudFront domain "
+                        "and certificate (TLSv1 minimum is enforced by the "
+                        "default *.cloudfront.net certificate); a custom "
+                        "domain/cert is configured per deployment when an "
+                        "alternate domain name is supplied."
+                    ),
                 },
                 {
                     "id": "AwsSolutions-CFR3",
-                    "reason": "Access logging not required for demo",
+                    "reason": (
+                        "CloudFront standard access logging is left to the "
+                        "deploying account's centralized logging "
+                        "configuration to avoid creating a per-distribution "
+                        "log bucket in this stack."
+                    ),
                 },
+            ],
+        )
+
+        # CDK BucketDeployment custom-resource internals (service-role
+        # wildcards, AWS-managed basic-execution policy, construct-managed
+        # runtime) are not user-configurable.
+        bd_prefix = (
+            "/" + self.stack_name
+            + "/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C"
+        )
+        NagSuppressions.add_resource_suppressions_by_path(
+            self,
+            bd_prefix + "/ServiceRole/Resource",
+            [
+                {
+                    "id": "AwsSolutions-IAM4",
+                    "appliesTo": [
+                        "Policy::arn:<AWS::Partition>:iam::aws:policy/"
+                        "service-role/AWSLambdaBasicExecutionRole",
+                    ],
+                    "reason": (
+                        "AWS-managed basic-execution role is required by the "
+                        "CDK BucketDeployment custom-resource Lambda for "
+                        "CloudWatch logging; not user-configurable."
+                    ),
+                }
+            ],
+        )
+        NagSuppressions.add_resource_suppressions_by_path(
+            self,
+            bd_prefix + "/ServiceRole/DefaultPolicy/Resource",
+            [
+                {
+                    "id": "AwsSolutions-IAM5",
+                    "appliesTo": [
+                        "Action::s3:GetBucket*",
+                        "Action::s3:GetObject*",
+                        "Action::s3:List*",
+                        "Action::s3:Abort*",
+                        "Action::s3:DeleteObject*",
+                        "Resource::<FrontendBucketEFE2E19C.Arn>/*",
+                        "Resource::arn:aws:s3:::cdk-hnb659fds-assets-"
+                        + self.account + "-" + self.region + "/*",
+                        # CloudFront invalidation needs the distribution "*".
+                        "Resource::*",
+                    ],
+                    "reason": (
+                        "Scoped S3 read/write to the CDK asset bucket and the "
+                        "frontend site bucket only; wildcard actions are "
+                        "sub-actions of the grant_read_write permission set. "
+                        "The CloudFront CreateInvalidation action only "
+                        "authorizes on '*' and is added by the managed "
+                        "BucketDeployment construct."
+                    ),
+                }
+            ],
+        )
+        NagSuppressions.add_resource_suppressions_by_path(
+            self,
+            bd_prefix + "/Resource",
+            [
+                {
+                    "id": "AwsSolutions-L1",
+                    "reason": (
+                        "Runtime is managed by the CDK BucketDeployment "
+                        "construct and is not user-configurable."
+                    ),
+                }
             ],
         )

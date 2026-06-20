@@ -202,7 +202,7 @@ cdk deploy procurement-optimization-agent-frontend-development --require-approva
 aws cognito-idp admin-create-user \
   --user-pool-id "$POOL_ID" \
   --username user@example.com \
-  --temporary-password TempPass123! \
+  --temporary-password "<choose-a-strong-temporary-password>" \
   --user-attributes Name=email,Value=user@example.com
 
 # User will be prompted to set a new password on first login

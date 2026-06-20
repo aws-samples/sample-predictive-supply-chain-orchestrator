@@ -11,7 +11,6 @@ Follows CDE standards:
 - No hardcoded values
 """
 
-import json
 import os
 import time
 from typing import Dict, Any, List
@@ -50,12 +49,12 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     """
     start_time = time.time()
 
-    try:
-        logger.info(
-            "optimization_tool_invoked",
-            request_id=context.aws_request_id if context else "local"
-        )
+    logger.info(
+        "optimization_tool_invoked",
+        request_id=context.aws_request_id if context else "local"
+    )
 
+    try:
         # Validate input
         materials = event.get("materials", [])
         if not materials:
@@ -155,50 +154,26 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         )
 
         return {
-            "statusCode": 200,
-            "body": json.dumps({
-                "solutions": solutions_json,
-                "request_id": context.aws_request_id if context else "local",
-                "computation_time_ms": computation_time_ms
-            })
+            "solutions": solutions_json,
+            "request_id": context.aws_request_id if context else "local",
+            "computation_time_ms": computation_time_ms,
         }
 
     except ValueError as e:
-        logger.warning(
-            "optimization_validation_error",
-            error=str(e)
-        )
-        return {
-            "statusCode": 400,
-            "body": json.dumps({
-                "error": f"Validation error: {str(e)}"
-            })
-        }
+        # Re-raise so the AgentCore Gateway marks the tool call as failed.
+        logger.warning("optimization_validation_error", error=str(e))
+        raise
 
-    except TimeoutError as e:
-        logger.error(
-            "optimization_timeout",
-            error=str(e)
+    except TimeoutError:
+        logger.error("optimization_timeout")
+        raise TimeoutError(
+            "Optimization timed out. Try reducing the number of materials or constraints."
         )
-        return {
-            "statusCode": 504,
-            "body": json.dumps({
-                "error": "Optimization timed out. Try reducing the number of materials or constraints."
-            })
-        }
 
-    except Exception as e:
-        logger.error(
-            "optimization_tool_error",
-            error=str(e),
-            exc_info=True
-        )
-        return {
-            "statusCode": 500,
-            "body": json.dumps({
-                "error": "Internal error during optimization"
-            })
-        }
+    except (KeyError, TypeError, RuntimeError) as e:
+        # Re-raise so the AgentCore Gateway surfaces the failure to the agent.
+        logger.error("optimization_tool_error", error=str(e), exc_info=True)
+        raise
 
 
 def _run_optimization(
