@@ -179,7 +179,7 @@ def find_hidden_dependencies(supplier_id: str) -> List[Dict]:
 ## Demo Talking Points
 
 **Current (CSV-based)**:
-"We're analyzing 15 suppliers and 16 materials..."
+"We're analyzing 15 suppliers and 18 materials..."
 
 **With Neptune**:
 "Behind the scenes, we're using Amazon Neptune graph database to model the entire supply chain network. This lets us answer questions like 'If this supplier fails, what are ALL the alternative paths?' or 'Show me hidden dependencies where multiple suppliers share the same sub-tier supplier.' These queries are nearly impossible with traditional SQL."

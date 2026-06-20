@@ -13,7 +13,7 @@ Complete deployment instructions for the Procurement Optimization Agent infrastr
 
 ## Architecture Overview
 
-The deployment consists of 15 CDK stacks:
+The deployment consists of 14 CDK stacks:
 
 | Stack | Description |
 |-------|-------------|
@@ -22,16 +22,19 @@ The deployment consists of 15 CDK stacks:
 | Data | VPC, Neptune cluster, S3 bucket, forecast data upload |
 | Lambda | Optimization, Data Access, Explainability Lambda functions |
 | Neptune Loader | Custom Resource for Neptune bulk data loading |
-| Agent | Procurement agent on Bedrock AgentCore Runtime |
 | Gateway | AgentCore Gateway exposing Lambda tools via MCP |
 | Policy | AgentCore PolicyEngine with Cedar RBAC |
 | Memory | AgentCore Memory with semantic strategies |
 | Evaluator | AgentCore Evaluators for agent quality |
+| Guardrail | Bedrock Guardrail for PII detection + content safety |
 | Observability | CloudWatch dashboards, alarms, tracing |
 | API | Flask Lambda + API Gateway (procurement + forecast endpoints) |
 | Frontend | S3 + CloudFront + Cognito auth |
 | SageMaker Forecast | IAM role for Chronos-2 SageMaker endpoint |
-| Forecast Agent | Demand forecasting agent on AgentCore Runtime |
+
+> The procurement and demand-forecast agents run on Bedrock AgentCore Runtime
+> and are deployed separately via the AgentCore starter toolkit
+> (`scripts/deploy_agent_runtime.py`), not as CDK stacks.
 
 ## Deployment Steps
 
