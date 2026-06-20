@@ -236,15 +236,14 @@ if [ -n "$POOL_ID_FOR_USER" ]; then
   aws cognito-idp add-custom-attributes --user-pool-id "$POOL_ID_FOR_USER" \
     --custom-attributes 'Name=role,AttributeDataType=String,Mutable=true,StringAttributeConstraints={MaxLength=50}' 2>/dev/null || true
 
-  # Prompt for password or use env var
+  # Demo-user password: use $DEMO_PASSWORD if provided, otherwise auto-generate
+  # a strong random one and print it once. Never hardcode a credential.
   DEMO_PASSWORD="${DEMO_PASSWORD:-}"
+  DEMO_PASSWORD_GENERATED=false
   if [ -z "$DEMO_PASSWORD" ]; then
-    echo -n "  Enter password for demo users (min 8 chars, upper+lower+number+special): "
-    read -r DEMO_PASSWORD
-    if [ -z "$DEMO_PASSWORD" ]; then
-      echo "  No password provided — skipping user creation"
-      POOL_ID_FOR_USER=""
-    fi
+    # 24 random alphanumerics + fixed symbol/case/digit to satisfy Cognito policy
+    DEMO_PASSWORD="Demo-$(openssl rand -base64 24 | tr -dc 'A-Za-z0-9' | cut -c1-20)-7a!"
+    DEMO_PASSWORD_GENERATED=true
   fi
 
   if [ -n "$POOL_ID_FOR_USER" ]; then
@@ -315,5 +314,15 @@ echo "  Frontend:  $CLOUDFRONT_URL"
 echo "  API:       $API_URL"
 echo "  Agent ARN: $PROCUREMENT_AGENT_ARN"
 echo "  Users:     demo@voltcycle.com (Admin), analyst@voltcycle.com (Analyst), manager@voltcycle.com (ProcurementManager)"
+if [ -n "${DEMO_PASSWORD:-}" ]; then
+  if [ "${DEMO_PASSWORD_GENERATED:-false}" = "true" ]; then
+    echo ""
+    echo "  ⚠️  Auto-generated demo password (shown once — save it now):"
+    echo "      $DEMO_PASSWORD"
+    echo "      (set DEMO_PASSWORD before re-running to choose your own)"
+  else
+    echo "  Password:  (the DEMO_PASSWORD you provided)"
+  fi
+fi
 echo ""
 echo "Done!"
