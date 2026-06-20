@@ -85,11 +85,11 @@ Frontend → API Gateway → Flask Lambda (VPC)
 ```
 POST /api/optimize → Lambda runs scipy optimization
   ├── Reads supplier/material data from S3 CSV
-  ├── 16 materials x 2-3 suppliers each
-  ├── Greedy per-material selection with weight profiles
+  ├── 18 materials x 2-3 suppliers each
+  ├── SLSQP multi-objective optimization with weight profiles
   ├── TCO: base price + freight + carrying + carbon costs
-  └── Returns 4 Pareto-optimal strategies:
-      Budget ($905K) | Balanced ($963K) | Premium ($1,098K) | Resilient ($1,387K)
+  └── Returns 3 Pareto-optimal strategies:
+      Cost-Optimized | Balanced | Risk-Diversified
 ```
 
 ### Neptune Graph Queries

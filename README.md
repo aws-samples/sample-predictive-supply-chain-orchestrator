@@ -13,7 +13,7 @@ AI-powered procurement optimization for VoltCycle e-bike manufacturing. Combines
 
 1. **Demand Forecasting** -- SageMaker Chronos-2 (120M params, GPU) generates P10/P50/P90 probabilistic demand forecasts
 2. **Multi-Objective Optimization** -- SLSQP solver minimizes cost, risk, and lead time simultaneously. Generates 3 Pareto strategies: Cost-Optimized, Balanced, Risk-Diversified
-3. **Supplier Intelligence** -- Neptune graph database with 15 suppliers across 10 countries. Dynamic 6-dimension risk scoring with trend detection
+3. **Supplier Intelligence** -- Neptune graph database with 15 suppliers across 9 countries. Dynamic 6-dimension risk scoring with trend detection
 4. **Risk Simulation** -- 5 geopolitical scenarios (Hormuz, Suez, Taiwan, tariffs, port strikes)
 5. **Purchase Requisitions** -- SAP ME51N-format PRs from approved optimization solutions
 6. **AI Agent** -- Natural language interface via 3 specialist agents orchestrated by Amazon Bedrock AgentCore

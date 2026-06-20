@@ -16,7 +16,7 @@ cd backend
 ./run_real.sh
 ```
 
-Backend will run on `http://localhost:5000`
+Backend will run on `http://localhost:5001`
 
 ### 2. Start Frontend
 
@@ -25,20 +25,20 @@ cd procurement-agent-ui
 npm run dev
 ```
 
-Frontend will run on `http://localhost:5173`
+Frontend will run on `http://localhost:5174`
 
 ### 3. Test Integration
 
-Open browser to `http://localhost:5173`
+Open browser to `http://localhost:5174`
 
 **Health Check:**
 ```bash
-curl http://localhost:5000/health
+curl http://localhost:5001/health
 ```
 
 **Test Optimization:**
 ```bash
-curl -X POST http://localhost:5000/api/optimize \
+curl -X POST http://localhost:5001/api/optimize \
   -H "Content-Type: application/json" \
   -d '{
     "materials": [
@@ -127,7 +127,7 @@ cp .env.example .env
 
 Edit `.env`:
 ```
-VITE_API_URL=http://localhost:5000
+VITE_API_URL=http://localhost:5001
 VITE_USE_MOCK_DATA=false
 VITE_ENABLE_REAL_API=true
 ```
@@ -177,7 +177,7 @@ Optimize supplier selection.
 {
   "solutions": [
     {
-      "name": "Budget",
+      "name": "Cost-Optimized",
       "total_cost": 650000,
       "risk_score": 7.5,
       "quality_score": 6.5,
@@ -197,7 +197,7 @@ Optimize supplier selection.
       "reasoning": "Optimal balance..."
     },
     {
-      "name": "Premium",
+      "name": "Risk-Diversified",
       "total_cost": 1200000,
       "risk_score": 1.5,
       "quality_score": 9.5,
@@ -215,12 +215,12 @@ Optimize supplier selection.
 ## Troubleshooting
 
 ### CORS Errors
-Backend has CORS enabled for `http://localhost:5173` and `http://localhost:3000`.
+Backend has CORS enabled for `http://localhost:5174` and `http://localhost:3000`.
 
 If you see CORS errors, check `backend/config/settings.py`:
 ```python
 cors_origins: str = Field(
-    default="http://localhost:5173,http://localhost:3000",
+    default="http://localhost:5174,http://localhost:3000",
     alias="CORS_ORIGINS"
 )
 ```
@@ -237,7 +237,7 @@ python -m api.server
 ### Frontend Not Connecting
 Check `.env` file has correct API URL:
 ```
-VITE_API_URL=http://localhost:5000
+VITE_API_URL=http://localhost:5001
 ```
 
 Restart frontend after changing `.env`:

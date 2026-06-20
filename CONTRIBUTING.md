@@ -25,7 +25,7 @@ Do **not** create a public GitHub issue for security findings.
 
 ## Code Standards
 
-See [CLAUDE.md](./CLAUDE.md) for enforced conventions. Key rules:
+Enforced conventions. Key rules:
 
 - No file over 500 lines
 - No bare `except Exception` — use specific exception types

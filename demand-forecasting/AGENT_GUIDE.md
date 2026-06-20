@@ -85,11 +85,11 @@ The agent has access to these tools:
 ## Data Files
 
 The agent reads from:
-- `../../shared/data/bike_sales_history.csv` - Product-level sales (1,782 transactions)
-- `../../shared/data/maintenance_demand_history.csv` - Material-level maintenance (1,207 events)
-- `../../shared/data/bom.csv` - Bill of Materials (32 entries)
-- `../../shared/data/materials.csv` - Material catalog (18 materials)
-- `../../shared/data/holiday_calendar.csv` - Holiday reference (14 holidays)
+- `./data/bike_sales_history.csv` - Product-level sales (1,782 transactions)
+- `./data/maintenance_demand_history.csv` - Material-level maintenance (1,207 events)
+- `./data/bom.csv` - Bill of Materials (32 entries)
+- `./data/materials.csv` - Material catalog (18 materials)
+- `./data/holiday_calendar.csv` - Holiday reference (14 holidays)
 
 ## Example Queries
 
