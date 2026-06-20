@@ -17,7 +17,7 @@
 
 **Example: VoltCycle Manufacturing (Our Demo)**
 - Suppliers: 15 suppliers
-- Materials: 16 materials per e-bike
+- Materials: 18 materials in the catalog
 - Products: 3 e-bike models (Urban, Mountain, Cargo)
 - Relationships: 200+ supplier-material combinations
 - Order Size: 500 units per production run
@@ -244,11 +244,11 @@ Revenue: $5M/year
 Suppliers: 15 suppliers
 ├─ Batteries: 3 suppliers (China, South Korea, USA)
 ├─ Motors: 3 suppliers (Germany, Japan, USA)
-├─ Frames: 4 suppliers (Taiwan, USA, Vietnam)
+├─ Frames: suppliers in USA, Japan, UK
 ├─ Electronics: 3 suppliers (China, USA)
 └─ Components: 2 suppliers (various)
 
-Materials: 16 per bike × 3 models = 48 materials
+Materials: 18 materials across the BOM
 Optimization: < 10 seconds
 Annual Orders: ~100 purchase orders
 ```
